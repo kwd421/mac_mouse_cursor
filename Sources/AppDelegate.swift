@@ -9,24 +9,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         controller.start()
-
-        if let folderToApply = autoApplyFolderURL(from: CommandLine.arguments) {
-            NSApp.setActivationPolicy(.prohibited)
-            Task { @MainActor in
-                do {
-                    let result = try controller.autoApplyThemeFolder(folderToApply)
-                    print("identifier: \(result.appliedIdentifier)")
-                } catch {
-                    let message = error.localizedDescription
-                    fputs("자동 적용 실패: \(message)\n", stderr)
-                    NSApp.terminate(nil)
-                    return
-                }
-                NSApp.terminate(nil)
-            }
-            return
-        }
-
         NSApp.setActivationPolicy(.regular)
         openSettingsIfNeeded()
     }
@@ -46,13 +28,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hasOpenedSettingsOnLaunch = true
         openSettingsWindow()
     }
-
-    private func autoApplyFolderURL(from arguments: [String]) -> URL? {
-        guard let optionIndex = arguments.firstIndex(of: "--apply-folder") else { return nil }
-        let valueIndex = arguments.index(after: optionIndex)
-        guard valueIndex < arguments.endIndex else { return nil }
-        return URL(fileURLWithPath: arguments[valueIndex], isDirectory: true)
-    }
 }
 
 @MainActor
@@ -61,7 +36,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         let contentView = SettingsView(controller: controller)
         let hostingController = NSHostingController(rootView: contentView)
         let window = NSWindow(contentViewController: hostingController)
-        window.title = "Mac Mouse Cursor"
+        window.title = "CapeForge"
         window.setContentSize(NSSize(width: 920, height: 680))
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.center()

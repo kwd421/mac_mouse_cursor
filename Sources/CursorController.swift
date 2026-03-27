@@ -1,12 +1,6 @@
 import AppKit
 import Foundation
 
-struct AutoApplyResult {
-    let capeURL: URL
-    let appliedIdentifier: String
-    let themeName: String
-}
-
 struct CursorFrame {
     let image: NSImage
     let delay: TimeInterval
@@ -264,37 +258,6 @@ final class CursorController: ObservableObject {
         }
     }
 
-    @discardableResult
-    func autoApplyThemeFolder(_ url: URL) throws -> AutoApplyResult {
-        setThemeFolder(url)
-        let resolution = try loadTheme()
-
-        let themeName = capeDisplayName()
-        let identifier = stableCapeIdentifier(for: url)
-        let capeURL = try mousecapeCapeURL(for: identifier)
-
-        try capeExporter.exportCape(
-            name: themeName,
-            author: NSFullUserName().isEmpty ? NSUserName() : NSFullUserName(),
-            identifier: identifier,
-            theme: resolution.theme,
-            to: capeURL
-        )
-
-        let mousecloakURL = try ensureMousecloakBinary()
-        try runProcess(
-            executableURL: mousecloakURL,
-            arguments: ["--suppressCopyright", "--apply", capeURL.path]
-        )
-
-        let message = "자동 적용 완료: \(themeName)"
-        statusText = message
-        print(message)
-        print("cape: \(capeURL.path)")
-
-        return AutoApplyResult(capeURL: capeURL, appliedIdentifier: identifier, themeName: themeName)
-    }
-
     func reload() {
         do {
             let resolution = try loadTheme()
@@ -400,139 +363,13 @@ final class CursorController: ObservableObject {
         [
             "calibrationOffsets",
             "isEnabled",
-            "launchAtLogin",
             "selectedBorder",
             "selectedStyle"
         ].forEach { UserDefaults.standard.removeObject(forKey: $0) }
     }
 
-    private func mousecapeCapeURL(for identifier: String) throws -> URL {
-        let appSupport = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support", isDirectory: true)
-        let capesDirectory = appSupport.appendingPathComponent("Mousecape/capes", isDirectory: true)
-        try FileManager.default.createDirectory(at: capesDirectory, withIntermediateDirectories: true)
-        return capesDirectory.appendingPathComponent(identifier).appendingPathExtension("cape")
-    }
-
-    private func stableCapeIdentifier(for url: URL) -> String {
-        let slug = sanitizedIdentifierComponent(from: url.deletingPathExtension().lastPathComponent)
-        let digest = fnv1a64Hex(url.standardizedFileURL.path)
-        return "local.capeforge.\(slug).\(digest)"
-    }
-
-    private func sanitizedIdentifierComponent(from value: String) -> String {
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-"))
-        let reduced = value.precomposedStringWithCanonicalMapping.lowercased().map { character -> Character in
-            let scalar = String(character).unicodeScalars.first!
-            return allowed.contains(scalar) ? character : "-"
-        }
-        let normalized = String(reduced)
-            .split(separator: "-")
-            .joined(separator: "-")
-        return normalized.isEmpty ? "theme" : normalized
-    }
-
-    private func fnv1a64Hex(_ string: String) -> String {
-        var hash: UInt64 = 0xcbf29ce484222325
-        for byte in string.utf8 {
-            hash ^= UInt64(byte)
-            hash &*= 0x100000001b3
-        }
-        return String(hash, radix: 16)
-    }
-
-    private func ensureMousecloakBinary() throws -> URL {
-        let derivedData = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-            .appendingPathComponent("mac_mouse_cursor_upstream", isDirectory: true)
-        let binaryURL = derivedData.appendingPathComponent("Build/Products/Debug/mousecloak")
-
-        if FileManager.default.isExecutableFile(atPath: binaryURL.path) {
-            return binaryURL
-        }
-
-        guard let projectRoot = projectRootURL() else {
-            throw CursorError.privateCursorHelperFailed("mousecloak 소스 경로를 찾지 못했습니다.")
-        }
-
-        let projectURL = projectRoot
-            .appendingPathComponent("upstream/Mousecape/Mousecape/Mousecape.xcodeproj")
-        guard FileManager.default.fileExists(atPath: projectURL.path) else {
-            throw CursorError.privateCursorHelperFailed("upstream Mousecape 프로젝트를 찾지 못했습니다.")
-        }
-
-        try runProcess(
-            executableURL: URL(fileURLWithPath: "/usr/bin/xcodebuild"),
-            arguments: [
-                "-project", projectURL.path,
-                "-scheme", "mousecloak",
-                "-configuration", "Debug",
-                "-derivedDataPath", derivedData.path,
-                "build",
-                "CODE_SIGNING_ALLOWED=NO",
-                "CODE_SIGNING_REQUIRED=NO",
-                "CODE_SIGN_IDENTITY=",
-                "DEVELOPMENT_TEAM="
-            ]
-        )
-
-        guard FileManager.default.isExecutableFile(atPath: binaryURL.path) else {
-            throw CursorError.privateCursorHelperFailed("mousecloak 빌드는 끝났지만 실행 파일이 없습니다.")
-        }
-
-        return binaryURL
-    }
-
-    private func projectRootURL() -> URL? {
-        if let envPath = ProcessInfo.processInfo.environment["MAC_MOUSE_CURSOR_PROJECT_DIR"] {
-            let url = URL(fileURLWithPath: envPath, isDirectory: true)
-            if FileManager.default.fileExists(atPath: url.path) {
-                return url
-            }
-        }
-
-        let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
-        if FileManager.default.fileExists(atPath: cwd.appendingPathComponent("upstream/Mousecape/Mousecape/Mousecape.xcodeproj").path) {
-            return cwd
-        }
-
-        if let executablePath = Bundle.main.executableURL?.path {
-            var candidate = URL(fileURLWithPath: executablePath)
-            for _ in 0..<5 {
-                candidate.deleteLastPathComponent()
-                if FileManager.default.fileExists(atPath: candidate.appendingPathComponent("upstream/Mousecape/Mousecape/Mousecape.xcodeproj").path) {
-                    return candidate
-                }
-            }
-        }
-
-        return nil
-    }
-
-    private func runProcess(executableURL: URL, arguments: [String]) throws {
-        let process = Process()
-        process.executableURL = executableURL
-        process.arguments = arguments
-
-        let outputPipe = Pipe()
-        process.standardOutput = outputPipe
-        process.standardError = outputPipe
-
-        try process.run()
-        let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
-        process.waitUntilExit()
-        let text = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-
-        if !text.isEmpty {
-            print(text)
-        }
-
-        guard process.terminationStatus == 0 else {
-            throw CursorError.privateCursorHelperFailed(text.isEmpty ? "\(executableURL.lastPathComponent) exited with status \(process.terminationStatus)" : text)
-        }
-    }
-
     private func capeDisplayName() -> String {
-        selectedFolderURL?.lastPathComponent.isEmpty == false ? selectedFolderURL!.lastPathComponent : "Mac Mouse Cursor Export"
+        selectedFolderURL?.lastPathComponent.isEmpty == false ? selectedFolderURL!.lastPathComponent : "CapeForge Export"
     }
 
     private func sanitizedCapeFileName() -> String {
@@ -548,8 +385,6 @@ enum CursorError: LocalizedError {
     case missingTheme(String)
     case invalidANI(String)
     case invalidThemeSelection(String)
-    case launchAgentUpdateFailed(String)
-    case privateCursorHelperFailed(String)
     case unsupportedCursorPayload
 
     var errorDescription: String? {
@@ -560,10 +395,6 @@ enum CursorError: LocalizedError {
             return "ANI 파싱 실패: \(message)"
         case .invalidThemeSelection(let message):
             return message
-        case .launchAgentUpdateFailed(let message):
-            return "로그인 항목을 적용하지 못했습니다: \(message)"
-        case .privateCursorHelperFailed(let message):
-            return "시스템 커서 헬퍼 실행 실패: \(message)"
         case .unsupportedCursorPayload:
             return "커서 프레임을 이미지로 읽지 못했습니다."
         }
