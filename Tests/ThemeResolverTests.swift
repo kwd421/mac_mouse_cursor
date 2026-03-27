@@ -39,7 +39,7 @@ struct ThemeResolverTests {
     }
 
     @Test
-    func keepsExactRoleIsolationInsideLeafFolder() throws {
+    func keepsExistingMatchesAndFallsBackMissingRolesToArrow() throws {
         let tempDirectory = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: tempDirectory) }
 
@@ -58,7 +58,155 @@ struct ThemeResolverTests {
         #expect(resolved.filesByRole[.arrow] != nil)
         #expect(resolved.filesByRole[.text] != nil)
         #expect(resolved.filesByRole[.move] != nil)
-        #expect(resolved.filesByRole[.link] == nil)
+        #expect(resolved.filesByRole[.link]?.lastPathComponent == "독케익_일반선택.ani")
+    }
+
+    @Test
+    func resolvesCombinedKoreanRoleFilesForExpandedMacRoles() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("기본", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "독케익_일반선택.ani",
+            "독케익_연결,위치,사용자 선택.ani",
+            "독케익_백그라운드 작업,사용중.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "독케익_일반선택.ani")
+        #expect(resolved.filesByRole[.link]?.lastPathComponent == "독케익_연결,위치,사용자 선택.ani")
+        #expect(resolved.filesByRole[.location]?.lastPathComponent == "독케익_연결,위치,사용자 선택.ani")
+        #expect(resolved.filesByRole[.busy]?.lastPathComponent == "독케익_백그라운드 작업,사용중.ani")
+        #expect(resolved.filesByRole[.working]?.lastPathComponent == "독케익_백그라운드 작업,사용중.ani")
+    }
+
+    @Test
+    func resolvesGenericEnglishCursorNames() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Saber", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "Normal.ani",
+            "Text.ani",
+            "Link.ani",
+            "Pin.ani",
+            "Precision.ani",
+            "Move.ani",
+            "Unavailable.ani",
+            "Busy.ani",
+            "Working.ani",
+            "Help.ani",
+            "Handwriting.ani",
+            "Person.ani",
+            "Alternate.ani",
+            "Vertical.ani",
+            "Horizontal.ani",
+            "Diagonal1.ani",
+            "Diagonal2.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.text]?.lastPathComponent == "Text.ani")
+        #expect(resolved.filesByRole[.link]?.lastPathComponent == "Link.ani")
+        #expect(resolved.filesByRole[.location]?.lastPathComponent == "Pin.ani")
+        #expect(resolved.filesByRole[.precision]?.lastPathComponent == "Precision.ani")
+        #expect(resolved.filesByRole[.move]?.lastPathComponent == "Move.ani")
+        #expect(resolved.filesByRole[.unavailable]?.lastPathComponent == "Unavailable.ani")
+        #expect(resolved.filesByRole[.busy]?.lastPathComponent == "Busy.ani")
+        #expect(resolved.filesByRole[.working]?.lastPathComponent == "Working.ani")
+        #expect(resolved.filesByRole[.help]?.lastPathComponent == "Help.ani")
+        #expect(resolved.filesByRole[.handwriting]?.lastPathComponent == "Handwriting.ani")
+        #expect(resolved.filesByRole[.person]?.lastPathComponent == "Person.ani")
+        #expect(resolved.filesByRole[.alternate]?.lastPathComponent == "Alternate.ani")
+        #expect(resolved.filesByRole[.verticalResize]?.lastPathComponent == "Vertical.ani")
+        #expect(resolved.filesByRole[.horizontalResize]?.lastPathComponent == "Horizontal.ani")
+        #expect(resolved.filesByRole[.diagonalResizeNWSE]?.lastPathComponent == "Diagonal1.ani")
+        #expect(resolved.filesByRole[.diagonalResizeNESW]?.lastPathComponent == "Diagonal2.ani")
+    }
+
+    @Test
+    func doesNotMapAlternateToUnavailableWhenUnavailableExists() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Ambiguous", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "Normal.ani",
+            "Alternate.ani",
+            "Unavailable.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.unavailable]?.lastPathComponent == "Unavailable.ani")
+    }
+
+    @Test
+    func fallsBackToArrowWhenNoExactArrowMatchExists() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Fallback", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "Mystery.ani",
+            "Help.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.help]?.lastPathComponent == "Help.ani")
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "Mystery.ani")
+    }
+
+    @Test
+    func fallsBackToThemeArrowForUnresolvedRoles() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Partial", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "Normal.ani",
+            "Help.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.help]?.lastPathComponent == "Help.ani")
+        #expect(resolved.filesByRole[.text]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.move]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.verticalResize]?.lastPathComponent == "Normal.ani")
     }
 
     private func makeTemporaryDirectory() throws -> URL {
@@ -94,7 +242,15 @@ struct CapeExporterTests {
             hotspot: CGPoint(x: 1, y: 1),
             canvasSize: CGSize(width: 16, height: 16)
         )
-        let theme = CursorTheme(animations: [.arrow: animation])
+        let theme = CursorTheme(animations: [
+            .arrow: animation,
+            .location: animation,
+            .working: animation,
+            .help: animation,
+            .handwriting: animation,
+            .person: animation,
+            .alternate: animation
+        ])
 
         let tempURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
             .appendingPathComponent(UUID().uuidString)
@@ -113,10 +269,22 @@ struct CapeExporterTests {
         let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
         let cursors = plist?["Cursors"] as? [String: Any]
         let arrow = cursors?["com.apple.coregraphics.Arrow"] as? [String: Any]
+        let legacyArrow = cursors?["com.apple.cursor.0"] as? [String: Any]
+        let copy = cursors?["com.apple.coregraphics.Copy"] as? [String: Any]
+        let wait = cursors?["com.apple.coregraphics.Wait"] as? [String: Any]
+        let help = cursors?["com.apple.cursor.40"] as? [String: Any]
+        let cell = cursors?["com.apple.cursor.41"] as? [String: Any]
+        let alias = cursors?["com.apple.coregraphics.Alias"] as? [String: Any]
 
         #expect(plist?["CapeName"] as? String == "Test Cape")
         #expect(plist?["Identifier"] as? String == "local.test.cape")
         #expect(arrow?["FrameCount"] as? Int == 1)
+        #expect(legacyArrow?["FrameCount"] as? Int == 1)
+        #expect(copy?["FrameCount"] as? Int == 1)
+        #expect(wait?["FrameCount"] as? Int == 1)
+        #expect(help?["FrameCount"] as? Int == 1)
+        #expect(cell?["FrameCount"] as? Int == 1)
+        #expect(alias?["FrameCount"] as? Int == 1)
         #expect((arrow?["Representations"] as? [Data])?.isEmpty == false)
     }
 }

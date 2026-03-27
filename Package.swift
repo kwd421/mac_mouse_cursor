@@ -7,17 +7,12 @@ let package = Package(
         .macOS(.v13)
     ],
     products: [
-        .executable(name: "MacMouseCursor", targets: ["MacMouseCursor"]),
-        .executable(name: "CursorDiagnostics", targets: ["CursorDiagnostics"])
+        .executable(name: "MacMouseCursor", targets: ["MacMouseCursor"])
     ],
     targets: [
         .executableTarget(
             name: "MacMouseCursor",
             path: "Sources"
-        ),
-        .executableTarget(
-            name: "CursorDiagnostics",
-            path: "Diagnostics"
         ),
         .testTarget(
             name: "MacMouseCursorTests",

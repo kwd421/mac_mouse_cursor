@@ -2,18 +2,24 @@ import AppKit
 import Foundation
 
 struct CapeExporter {
-    private let roleIdentifiers: [CursorRole: String] = [
-        .arrow: "com.apple.coregraphics.Arrow",
-        .text: "com.apple.coregraphics.IBeam",
-        .link: "com.apple.cursor.2",
-        .precision: "com.apple.cursor.7",
-        .move: "com.apple.coregraphics.Move",
-        .unavailable: "com.apple.cursor.3",
-        .busy: "com.apple.coregraphics.Wait",
-        .verticalResize: "com.apple.cursor.23",
-        .horizontalResize: "com.apple.cursor.19",
-        .diagonalResizeNWSE: "com.apple.cursor.34",
-        .diagonalResizeNESW: "com.apple.cursor.30"
+    private let roleIdentifiers: [CursorRole: [String]] = [
+        .arrow: ["com.apple.coregraphics.Arrow", "com.apple.cursor.0"],
+        .text: ["com.apple.coregraphics.IBeam"],
+        .link: ["com.apple.cursor.2", "com.apple.cursor.13"],
+        .location: ["com.apple.coregraphics.Copy", "com.apple.cursor.5"],
+        .precision: ["com.apple.cursor.7", "com.apple.cursor.8"],
+        .move: ["com.apple.coregraphics.Move", "com.apple.cursor.11", "com.apple.cursor.12"],
+        .unavailable: ["com.apple.cursor.3"],
+        .busy: ["com.apple.cursor.4"],
+        .working: ["com.apple.coregraphics.Wait"],
+        .help: ["com.apple.cursor.40"],
+        .handwriting: ["com.apple.coregraphics.IBeamXOR", "com.apple.cursor.20"],
+        .person: ["com.apple.cursor.41"],
+        .alternate: ["com.apple.coregraphics.Alias"],
+        .verticalResize: ["com.apple.cursor.23", "com.apple.cursor.32"],
+        .horizontalResize: ["com.apple.cursor.19", "com.apple.cursor.28"],
+        .diagonalResizeNWSE: ["com.apple.cursor.34"],
+        .diagonalResizeNESW: ["com.apple.cursor.30"]
     ]
 
     func exportCape(
@@ -26,8 +32,11 @@ struct CapeExporter {
         var cursors: [String: Any] = [:]
 
         for role in CursorRole.allCases {
-            guard let animation = theme[role], let identifier = roleIdentifiers[role] else { continue }
-            cursors[identifier] = try cursorDictionary(for: animation)
+            guard let animation = theme[role], let identifiers = roleIdentifiers[role] else { continue }
+            let dictionary = try cursorDictionary(for: animation)
+            for identifier in identifiers {
+                cursors[identifier] = dictionary
+            }
         }
 
         guard !cursors.isEmpty else {

@@ -22,9 +22,6 @@ struct ContentView: View {
             .font(.footnote)
             .foregroundStyle(controller.selectedFolderIsValid ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.orange))
 
-            Toggle("커서 오버레이 활성화", isOn: $controller.isEnabled)
-            Toggle("로그인 시 실행", isOn: $controller.launchAtLogin)
-
             HStack(spacing: 8) {
                 Button("설정 열기") {
                     (NSApp.delegate as? AppDelegate)?.openSettingsWindow()
@@ -96,6 +93,9 @@ struct CursorRoleRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(assignment.role.displayName)
+                Text(assignment.role.englishName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -107,18 +107,21 @@ struct CursorRoleRow: View {
 
     private var statusSymbolName: String {
         if !assignment.isResolved { return "exclamationmark.triangle.fill" }
+        if assignment.usesArrowFallback { return "exclamationmark.triangle.fill" }
         if assignment.isOverride { return "slider.horizontal.3" }
         return "checkmark.circle.fill"
     }
 
     private var statusColor: Color {
         if !assignment.isResolved { return .orange }
+        if assignment.usesArrowFallback { return .orange }
         if assignment.isOverride { return .accentColor }
         return .secondary
     }
 
     private var subtitle: String {
         if !assignment.isResolved { return "자동 매핑 실패" }
+        if assignment.usesArrowFallback { return "자동 매핑 실패 · 일반 커서 대체" }
         if assignment.isOverride { return assignment.sourceURL?.lastPathComponent ?? "수동 지정" }
         return assignment.sourceURL?.lastPathComponent ?? "자동 매핑"
     }
@@ -136,14 +139,17 @@ struct CursorRoleDetailView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(assignment.role.displayName)
                         .font(.title2)
+                    Text(assignment.role.englishName)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
                     Text("기본 커서와 현재 적용 중인 커서를 비교하고, 필요하면 이 역할만 별도로 지정할 수 있습니다.")
                         .foregroundStyle(.secondary)
                 }
 
                 HStack(alignment: .top, spacing: 20) {
                     PreviewGroup(
-                        title: "기본 커서",
-                        subtitle: "macOS 기본 포인터 모양",
+                        title: "현재 시스템 커서",
+                        subtitle: "지금 시스템에 등록된 포인터 미리보기",
                         animation: assignment.defaultPreview
                     )
                     PreviewGroup(
@@ -155,8 +161,16 @@ struct CursorRoleDetailView: View {
 
                 GroupBox {
                     VStack(alignment: .leading, spacing: 14) {
+                        if assignment.usesArrowFallback {
+                            Label("자동 매칭되는 전용 커서를 찾지 못해 이 테마의 일반 커서로 대체했습니다.", systemImage: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                        }
                         LabeledContent("역할") {
-                            Text(assignment.role.displayName)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(assignment.role.displayName)
+                                Text(assignment.role.englishName)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         LabeledContent("자동 파일명") {
                             Text(assignment.role.themeFileName)
@@ -167,6 +181,12 @@ struct CursorRoleDetailView: View {
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.trailing)
                                 .textSelection(.enabled)
+                        }
+                        if assignment.usesArrowFallback {
+                            LabeledContent("상태") {
+                                Text("자동 매핑 실패 (일반 커서 대체)")
+                                    .foregroundStyle(.orange)
+                            }
                         }
                         Divider()
                         HStack {
@@ -186,69 +206,6 @@ struct CursorRoleDetailView: View {
                     Text("할당")
                 }
 
-                CalibrationGroup(controller: controller, role: assignment.role)
-
-                GroupBox {
-                    VStack(alignment: .leading, spacing: 12) {
-                        LabeledContent("현재 감지된 역할") {
-                            Text(controller.currentObservation?.role.displayName ?? "아직 없음")
-                        }
-                        LabeledContent("핫스팟") {
-                            if let observation = controller.currentObservation {
-                                Text(String(format: "(%.1f, %.1f)", observation.hotspot.x, observation.hotspot.y))
-                            } else {
-                                Text("-")
-                            }
-                        }
-                        LabeledContent("지문") {
-                            Text(controller.currentObservation?.fingerprintPrefix ?? "-")
-                                .monospaced()
-                        }
-
-                        if !controller.recentObservations.isEmpty {
-                            Divider()
-                            Text("최근 감지 기록")
-                                .font(.headline)
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(controller.recentObservations.prefix(8)) { observation in
-                                    HStack {
-                                        Text(observation.role.displayName)
-                                        Spacer()
-                                        Text(observation.timestamp, style: .time)
-                                            .foregroundStyle(.secondary)
-                                        Text(observation.fingerprintPrefix)
-                                            .foregroundStyle(.secondary)
-                                            .monospaced()
-                                    }
-                                    .font(.footnote)
-                                }
-                            }
-                        }
-
-                        if !controller.matcherSelfTestResults.isEmpty {
-                            Divider()
-                            Text("기본 커서 매처 자기검증")
-                                .font(.headline)
-                            VStack(alignment: .leading, spacing: 8) {
-                                ForEach(controller.matcherSelfTestResults) { result in
-                                    HStack {
-                                        Image(systemName: result.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                            .foregroundStyle(result.passed ? .green : .red)
-                                        Text(result.name)
-                                        Spacer()
-                                        Text(result.observedRole.displayName)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    .font(.footnote)
-                                }
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                } label: {
-                    Text("감지 디버그")
-                }
-
                 Text(controller.statusText)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -257,80 +214,6 @@ struct CursorRoleDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(Color(nsColor: .windowBackgroundColor))
-    }
-}
-
-struct CalibrationGroup: View {
-    @ObservedObject var controller: CursorController
-    let role: CursorRole
-
-    var body: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("다른 앱이나 창에서 커스텀 커서가 실제 포인터보다 어긋나 보이면 여기서 보정할 수 있습니다.")
-                    .foregroundStyle(.secondary)
-
-                HStack {
-                    Button("자동 보정") {
-                        _ = controller.autoCalibrate(for: role)
-                    }
-                    Spacer()
-                }
-
-                CalibrationSliderRow(
-                    title: "가로 보정",
-                    value: Binding(
-                        get: { controller.calibration(for: role).offsetX },
-                        set: { controller.setCalibrationX($0, for: role) }
-                    ),
-                    range: -40...40
-                )
-
-                CalibrationSliderRow(
-                    title: "세로 보정",
-                    value: Binding(
-                        get: { controller.calibration(for: role).offsetY },
-                        set: { controller.setCalibrationY($0, for: role) }
-                    ),
-                    range: -40...40
-                )
-
-                HStack {
-                    let calibration = controller.calibration(for: role)
-                    Text("현재 보정값: X \(Int(calibration.offsetX)), Y \(Int(calibration.offsetY))")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Button("보정 초기화") {
-                        controller.resetCalibration(for: role)
-                    }
-                    .disabled(calibration == .zero)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        } label: {
-            Text("위치 보정")
-        }
-    }
-}
-
-struct CalibrationSliderRow: View {
-    let title: String
-    let value: Binding<Double>
-    let range: ClosedRange<Double>
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(title)
-                Spacer()
-                Text(String(format: "%.0f pt", value.wrappedValue))
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-
-            Slider(value: value, in: range, step: 1)
-        }
     }
 }
 
@@ -371,8 +254,6 @@ struct SettingsHeader: View {
                 .font(.footnote)
 
                 HStack(spacing: 18) {
-                    Toggle("커서 오버레이 활성화", isOn: $controller.isEnabled)
-                    Toggle("로그인 시 실행", isOn: $controller.launchAtLogin)
                     Spacer()
                     Button("Mousecape로 내보내기…") {
                         controller.exportMousecapeCape()

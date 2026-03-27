@@ -115,7 +115,7 @@ struct AniParser {
         }
 
         let imagePayload = Data(data[imageOffset..<(imageOffset + imageBytes)])
-        guard let image = NSImage(data: imagePayload) else {
+        guard let image = NSImage(data: data) ?? NSImage(data: imagePayload) else {
             throw CursorError.unsupportedCursorPayload
         }
 
