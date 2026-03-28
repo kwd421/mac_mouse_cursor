@@ -1,0 +1,304 @@
+# german
+
+[app.chooseCursorFolder]
+Wählen Sie einen Cursor-Ordner
+
+[app.rolesReady]
+%d Rollen bereit
+
+[app.folderRequired]
+Ordner erforderlich
+
+[app.openSettings]
+Einstellungen öffnen
+
+[app.quit]
+Beenden
+
+[app.cursors]
+Cursor
+
+[app.additionalCursors]
+Zusätzliche Cursor
+
+[app.additionalCursorUses]
+Verwendet %@
+
+[app.additionalCursorHint]
+Normalerweise müssen Sie diese nicht ändern.
+Sie decken macOS-Cursorzustände ab, die nicht oft verwendet werden, und werden standardmäßig dem ähnlichsten vorhandenen Cursor zugeordnet.
+
+[app.noCursorLoaded]
+Kein Cursor geladen
+
+[app.loadCursorFolderHint]
+Laden Sie einen Cursor-Ordner und wählen Sie dann links eine Rolle zur Vorschau aus.
+
+[app.exportToMousecape]
+Als .cape-Datei exportieren…
+
+[app.automaticMatchFailed]
+Automatische Zuordnung fehlgeschlagen
+
+[app.automaticMatchFailedArrowFallback]
+Automatische Zuordnung fehlgeschlagen · Standardcursor als Ersatz
+
+[app.manualOverride]
+Manuelle Zuweisung
+
+[app.automaticallyMatched]
+Automatisch zugeordnet
+
+[app.automaticallyMatchedFromFolder]
+Automatisch aus dem Ordner zugeordnet
+
+[app.changeCursorFile]
+Cursor-Datei ändern…
+
+[app.arrowFallbackDescription]
+Für diese Rolle wurde kein eigener Cursor gefunden, daher wird stattdessen der Standardcursor des Themes verwendet.
+
+[app.automaticMatchKeywords]
+Schlüsselwörter für automatische Zuordnung
+
+[app.inheritedMatchKeywords]
+Übernommene Zuordnungsschlüsselwörter
+
+[app.mousecape]
+Mousecape
+
+[app.currentSource]
+Aktuelle Quelle
+
+[app.automaticallyMatchedInsideSelectedFolder]
+Im ausgewählten Ordner automatisch zugeordnet
+
+[app.status]
+Status
+
+[app.automaticMatchFailedArrowFallbackShort]
+Automatische Zuordnung fehlgeschlagen (Standardcursor als Ersatz)
+
+[app.cursorFolder]
+Cursor-Ordner
+
+[app.noFolderSelected]
+Kein Ordner ausgewählt
+
+[app.chooseFolder]
+Ordner wählen…
+
+[app.cursorWillAppearHere]
+Der Cursor wird hier angezeigt, sobald Sie einen laden.
+
+[export.authorLabel]
+Autor
+
+[export.authorPlaceholder]
+Autorname für Mousecape eingeben
+
+[export.sizeLabel]
+Cursorgröße
+
+[export.emptyAuthorTitle]
+Mac-Benutzernamen verwenden?
+
+[export.emptyAuthorMessage]
+Wenn Sie das Autorenfeld leer lassen, wird dieses Cape mit "%@" als Autor exportiert.
+
+[export.useMacUserName]
+Mac-Benutzernamen verwenden
+
+[export.cancel]
+Abbrechen
+
+[export.unknownAuthor]
+Unbekannt
+
+[role.arrow]
+Standardauswahl
+
+[role.text]
+Textauswahl
+
+[role.link]
+Linkauswahl
+
+[role.location]
+Ziehen
+
+[role.precision]
+Präzisionsauswahl
+
+[role.move]
+Bewegen
+
+[role.unavailable]
+Nicht verfügbar
+
+[role.busy]
+Beschäftigt
+
+[role.working]
+Warten
+
+[role.help]
+Hilfe
+
+[role.handwriting]
+Handschrift
+
+[role.person]
+Zellenauswahl
+
+[role.alternate]
+Alias
+
+[role.verticalResize]
+Vertikal skalieren
+
+[role.horizontalResize]
+Horizontal skalieren
+
+[role.diagonalResizeNWSE]
+Diagonale Größenänderung 1
+
+[role.diagonalResizeNESW]
+Diagonale Größenänderung 2
+
+[role.contextualMenu]
+Kontextmenü
+
+[role.dragCopy]
+Ziehen zum Kopieren
+
+[role.dragLink]
+Ziehen zum Verknüpfen
+
+[role.disappearingItem]
+Verschwindendes Element
+
+[role.resizeUp]
+Nach oben vergrößern
+
+[role.resizeDown]
+Nach unten vergrößern
+
+[role.resizeLeft]
+Nach links vergrößern
+
+[role.resizeRight]
+Nach rechts vergrößern
+
+[role.verticalIBeam]
+Vertikale Textauswahl
+
+[status.startingUp]
+Initialisierung...
+
+[status.chooseCursorFolder]
+Wählen Sie einen Cursor-Ordner.
+
+[status.supportedFiles]
+Unterstützte Dateien sind .ani und .cur.
+
+[status.exportSuccess]
+Mousecape-Cape exportiert: %@
+
+[status.exportFailure]
+Cape-Export fehlgeschlagen: %@
+
+[status.loaded]
+%@ geladen · %d/%d Rollen zugeordnet
+
+[status.loadFailure]
+Laden fehlgeschlagen: %@
+
+[panel.chooseFolder]
+Ordner wählen
+
+[panel.chooseCursor]
+Cursor wählen
+
+[panel.export]
+Exportieren
+
+[menu.language]
+Sprache
+
+[menu.language.korean]
+한국어
+
+[menu.language.english]
+English
+
+[menu.language.japanese]
+日本語
+
+[menu.language.simplifiedChinese]
+简体中文
+
+[menu.language.traditionalChinese]
+繁體中文
+
+[menu.language.german]
+Deutsch
+
+[menu.language.french]
+Français
+
+[menu.language.spanish]
+Español
+
+[menu.language.portugueseBrazil]
+Português (Brasil)
+
+[menu.language.italian]
+Italiano
+
+[menu.language.russian]
+Русский
+
+[error.noThemeFolderSelected]
+Kein Theme-Ordner ausgewählt.
+
+[error.themeFileMissing]
+Theme-Datei fehlt: %@
+
+[error.aniParsingFailed]
+ANI-Analyse fehlgeschlagen: %@
+
+[error.unsupportedCursorPayload]
+Der Cursor-Frame konnte nicht als Bild gelesen werden.
+
+[error.invalidThemeSelection.noCursorFiles]
+Dieser Ordner enthält keine direkt nutzbaren Cursor-Dateien.
+Wählen Sie einen Ordner, der .ani- oder .cur-Dateien auf oberster Ebene enthält.
+
+[error.unsupportedExtension]
+Nicht unterstützte Dateiendung: %@
+
+[error.invalidRiffAconHeader]
+Die Datei hat keinen gültigen RIFF-ACON-Header.
+
+[error.invalidChunkLength]
+Die Chunk-Länge ist ungültig.
+
+[error.noFrames]
+Die Datei enthält keine Frames.
+
+[error.invalidIconChunkLength]
+Die Länge des icon-Chunks ist ungültig.
+
+[error.curTooShort]
+Die CUR-Daten sind zu kurz.
+
+[error.invalidCurHeader]
+Die Datei enthält keinen gültigen CUR-Header.
+
+[error.invalidCurEmbeddedRange]
+Der eingebettete CUR-Bereich ist ungültig.
+
+[error.noCursorsToExport]
+Es gibt keine Cursor zum Exportieren.
+

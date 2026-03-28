@@ -32,37 +32,6 @@ struct CapeForgeApp: App {
     }
 
     private var inferredInitialLanguage: AppLanguage {
-        let preferred = Locale.preferredLanguages.first?.lowercased() ?? "en"
-        if preferred.hasPrefix("ko") {
-            return .korean
-        }
-        if preferred.hasPrefix("ja") {
-            return .japanese
-        }
-        if preferred.contains("hant") {
-            return .traditionalChinese
-        }
-        if preferred.hasPrefix("zh") {
-            return .simplifiedChinese
-        }
-        if preferred.hasPrefix("de") {
-            return .german
-        }
-        if preferred.hasPrefix("fr") {
-            return .french
-        }
-        if preferred.hasPrefix("es") {
-            return .spanish
-        }
-        if preferred.hasPrefix("pt") {
-            return .portugueseBrazil
-        }
-        if preferred.hasPrefix("it") {
-            return .italian
-        }
-        if preferred.hasPrefix("ru") {
-            return .russian
-        }
-        return .english
+        Localized.inferredLanguage(from: Locale.preferredLanguages.first)
     }
 }

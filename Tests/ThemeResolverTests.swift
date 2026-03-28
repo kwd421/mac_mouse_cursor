@@ -140,6 +140,62 @@ struct ThemeResolverTests {
     }
 
     @Test
+    func resolvesCommonLocalizedCursorKeywords() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Localized", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "Normal.ani",
+            "Arrastrar.ani",
+            "Prohibido.ani",
+            "Attesa.ani",
+            "Hilfe.ani",
+            "Manuscrit.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.move]?.lastPathComponent == "Arrastrar.ani")
+        #expect(resolved.filesByRole[.unavailable]?.lastPathComponent == "Prohibido.ani")
+        #expect(resolved.filesByRole[.working]?.lastPathComponent == "Attesa.ani")
+        #expect(resolved.filesByRole[.help]?.lastPathComponent == "Hilfe.ani")
+        #expect(resolved.filesByRole[.handwriting]?.lastPathComponent == "Manuscrit.ani")
+    }
+
+    @Test
+    func resolvesLocalizedKeywordsWithDiacritics() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Diacritics", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let files = [
+            "Normal.ani",
+            "déplacer.ani",
+            "arrière-plan.ani",
+            "lápiz.ani"
+        ]
+
+        for file in files {
+            FileManager.default.createFile(atPath: folder.appendingPathComponent(file).path, contents: Data("x".utf8))
+        }
+
+        let resolved = try ThemeResolver().resolveTheme(in: folder)
+        #expect(resolved.filesByRole[.arrow]?.lastPathComponent == "Normal.ani")
+        #expect(resolved.filesByRole[.move]?.lastPathComponent == "déplacer.ani")
+        #expect(resolved.filesByRole[.working]?.lastPathComponent == "arrière-plan.ani")
+        #expect(resolved.filesByRole[.handwriting]?.lastPathComponent == "lápiz.ani")
+    }
+
+    @Test
     func doesNotMapAlternateToUnavailableWhenUnavailableExists() throws {
         let tempDirectory = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: tempDirectory) }
@@ -391,6 +447,280 @@ struct CapeExporterTests {
 
     @MainActor
     @Test
+    func exportsSupplementalMousecapeIdentifiersUsingMappedPrimaryRoles() throws {
+        let image = NSImage(size: NSSize(width: 16, height: 16))
+        image.lockFocus()
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 16, height: 16)).fill()
+        image.unlockFocus()
+
+        let animation = CursorAnimation(
+            frames: [CursorFrame(image: image, delay: 0.2)],
+            hotspot: CGPoint(x: 1, y: 1),
+            canvasSize: CGSize(width: 16, height: 16)
+        )
+        let theme = CursorTheme(animations: [
+            .link: animation,
+            .location: animation,
+            .alternate: animation,
+            .unavailable: animation,
+            .verticalResize: animation,
+            .horizontalResize: animation,
+            .text: animation
+        ])
+
+        let tempURL = temporaryCapeURL()
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        try CapeExporter().exportCape(
+            name: "Supplemental",
+            author: "Tester",
+            identifier: "local.test.supplemental",
+            theme: theme,
+            to: tempURL
+        )
+
+        let data = try Data(contentsOf: tempURL)
+        let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
+        let cursors = plist?["Cursors"] as? [String: Any] ?? [:]
+
+        #expect(cursors["com.apple.coregraphics.ArrowCtx"] != nil)
+        #expect(cursors["com.apple.coregraphics.CopyDrag"] != nil)
+        #expect(cursors["com.apple.coregraphics.LinkDrag"] != nil)
+        #expect(cursors["com.apple.coregraphics.DisappearingItem"] != nil)
+        #expect(cursors["com.apple.coregraphics.ResizeUp"] != nil)
+        #expect(cursors["com.apple.coregraphics.ResizeDown"] != nil)
+        #expect(cursors["com.apple.coregraphics.ResizeLeft"] != nil)
+        #expect(cursors["com.apple.coregraphics.ResizeRight"] != nil)
+        #expect(cursors["com.apple.coregraphics.IBeamForVerticalLayout"] != nil)
+    }
+
+    @MainActor
+    @Test
+    func exportsSupplementalOverrideInsteadOfMappedPrimaryRole() throws {
+        let baseImage = NSImage(size: NSSize(width: 16, height: 16))
+        baseImage.lockFocus()
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 16, height: 16)).fill()
+        baseImage.unlockFocus()
+
+        let overrideImage = NSImage(size: NSSize(width: 24, height: 24))
+        overrideImage.lockFocus()
+        NSColor.red.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 24, height: 24)).fill()
+        overrideImage.unlockFocus()
+
+        let baseAnimation = CursorAnimation(
+            frames: [CursorFrame(image: baseImage, delay: 0.2)],
+            hotspot: CGPoint(x: 1, y: 1),
+            canvasSize: CGSize(width: 16, height: 16)
+        )
+        let overrideAnimation = CursorAnimation(
+            frames: [CursorFrame(image: overrideImage, delay: 0.2)],
+            hotspot: CGPoint(x: 2, y: 2),
+            canvasSize: CGSize(width: 24, height: 24)
+        )
+        let theme = CursorTheme(
+            animations: [.location: baseAnimation],
+            supplementalAnimations: [.dragCopy: overrideAnimation]
+        )
+
+        let tempURL = temporaryCapeURL()
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        try CapeExporter().exportCape(
+            name: "Supplemental Override",
+            author: "Tester",
+            identifier: "local.test.supplemental-override",
+            theme: theme,
+            to: tempURL
+        )
+
+        let data = try Data(contentsOf: tempURL)
+        let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
+        let cursors = plist?["Cursors"] as? [String: Any] ?? [:]
+        let dragCopy = cursors["com.apple.coregraphics.CopyDrag"] as? [String: Any]
+
+        #expect(dragCopy?["PointsWide"] as? Double == 24.0)
+        #expect(dragCopy?["PointsHigh"] as? Double == 24.0)
+        #expect(dragCopy?["HotSpotX"] as? Double == 2.0)
+        #expect(dragCopy?["HotSpotY"] as? Double == 2.0)
+    }
+
+    @MainActor
+    @Test
+    func exportSizeMultiplierIncreasesLogicalCursorSize() throws {
+        let image = NSImage(size: NSSize(width: 32, height: 32))
+        image.lockFocus()
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 32, height: 32)).fill()
+        image.unlockFocus()
+
+        let animation = CursorAnimation(
+            frames: [CursorFrame(image: image, delay: 0.2)],
+            hotspot: CGPoint(x: 4, y: 5),
+            canvasSize: CGSize(width: 32, height: 32)
+        )
+        let theme = CursorTheme(animations: [.arrow: animation])
+
+        let baseURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("cape")
+        let largeURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("cape")
+        defer {
+            try? FileManager.default.removeItem(at: baseURL)
+            try? FileManager.default.removeItem(at: largeURL)
+        }
+
+        try CapeExporter().exportCape(
+            name: "Base",
+            author: "Tester",
+            identifier: "local.test.base",
+            theme: theme,
+            sizeMultiplier: 1.0,
+            to: baseURL
+        )
+
+        try CapeExporter().exportCape(
+            name: "Large",
+            author: "Tester",
+            identifier: "local.test.large",
+            theme: theme,
+            sizeMultiplier: 1.25,
+            to: largeURL
+        )
+
+        let baseData = try Data(contentsOf: baseURL)
+        let largeData = try Data(contentsOf: largeURL)
+        let basePlist = try PropertyListSerialization.propertyList(from: baseData, options: [], format: nil) as? [String: Any]
+        let largePlist = try PropertyListSerialization.propertyList(from: largeData, options: [], format: nil) as? [String: Any]
+        let baseArrow = (basePlist?["Cursors"] as? [String: Any])?["com.apple.coregraphics.Arrow"] as? [String: Any]
+        let largeArrow = (largePlist?["Cursors"] as? [String: Any])?["com.apple.coregraphics.Arrow"] as? [String: Any]
+
+        #expect((largeArrow?["PointsWide"] as? Double ?? 0) > (baseArrow?["PointsWide"] as? Double ?? 0))
+        #expect((largeArrow?["PointsHigh"] as? Double ?? 0) > (baseArrow?["PointsHigh"] as? Double ?? 0))
+        #expect((largeArrow?["HotSpotX"] as? Double ?? 0) > (baseArrow?["HotSpotX"] as? Double ?? 0))
+        #expect((largeArrow?["HotSpotY"] as? Double ?? 0) > (baseArrow?["HotSpotY"] as? Double ?? 0))
+    }
+
+    @MainActor
+    @Test
+    func exportSizeMultiplierStaysMonotonicAcrossScaleThreshold() throws {
+        let image = NSImage(size: NSSize(width: 40, height: 40))
+        image.lockFocus()
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 40, height: 40)).fill()
+        image.unlockFocus()
+
+        let animation = CursorAnimation(
+            frames: [CursorFrame(image: image, delay: 0.2)],
+            hotspot: CGPoint(x: 5, y: 6),
+            canvasSize: CGSize(width: 40, height: 40)
+        )
+        let theme = CursorTheme(animations: [.arrow: animation])
+
+        let baseURL = temporaryCapeURL()
+        let midURL = temporaryCapeURL()
+        let largeURL = temporaryCapeURL()
+        defer {
+            try? FileManager.default.removeItem(at: baseURL)
+            try? FileManager.default.removeItem(at: midURL)
+            try? FileManager.default.removeItem(at: largeURL)
+        }
+
+        try CapeExporter().exportCape(name: "Base", author: "Tester", identifier: "local.test.base2", theme: theme, sizeMultiplier: 1.0, to: baseURL)
+        try CapeExporter().exportCape(name: "Mid", author: "Tester", identifier: "local.test.mid2", theme: theme, sizeMultiplier: 1.5, to: midURL)
+        try CapeExporter().exportCape(name: "Large", author: "Tester", identifier: "local.test.large2", theme: theme, sizeMultiplier: 1.8, to: largeURL)
+
+        let baseArrow = try exportedArrow(at: baseURL)
+        let midArrow = try exportedArrow(at: midURL)
+        let largeArrow = try exportedArrow(at: largeURL)
+
+        let baseWidth = baseArrow["PointsWide"] as? Double ?? 0
+        let midWidth = midArrow["PointsWide"] as? Double ?? 0
+        let largeWidth = largeArrow["PointsWide"] as? Double ?? 0
+
+        #expect(baseWidth < midWidth)
+        #expect(midWidth < largeWidth)
+        #expect((baseArrow["HotSpotX"] as? Double ?? 0) < (midArrow["HotSpotX"] as? Double ?? 0))
+        #expect((midArrow["HotSpotX"] as? Double ?? 0) < (largeArrow["HotSpotX"] as? Double ?? 0))
+    }
+
+    @MainActor
+    @Test
+    func exportPreservesBaseLogicalSizeForRetinaSizedCursor() throws {
+        let image = NSImage(size: NSSize(width: 80, height: 80))
+        image.lockFocus()
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 80, height: 80)).fill()
+        image.unlockFocus()
+
+        let animation = CursorAnimation(
+            frames: [CursorFrame(image: image, delay: 0.2)],
+            hotspot: CGPoint(x: 8, y: 10),
+            canvasSize: CGSize(width: 80, height: 80)
+        )
+        let theme = CursorTheme(animations: [.arrow: animation])
+
+        let baseURL = temporaryCapeURL()
+        let largeURL = temporaryCapeURL()
+        defer {
+            try? FileManager.default.removeItem(at: baseURL)
+            try? FileManager.default.removeItem(at: largeURL)
+        }
+
+        try CapeExporter().exportCape(name: "Base", author: "Tester", identifier: "local.test.retina.base", theme: theme, sizeMultiplier: 1.0, to: baseURL)
+        try CapeExporter().exportCape(name: "Large", author: "Tester", identifier: "local.test.retina.large", theme: theme, sizeMultiplier: 1.5, to: largeURL)
+
+        let baseArrow = try exportedArrow(at: baseURL)
+        let largeArrow = try exportedArrow(at: largeURL)
+
+        #expect((baseArrow["PointsWide"] as? Double ?? 0) == 40)
+        #expect((baseArrow["PointsHigh"] as? Double ?? 0) == 40)
+        #expect((largeArrow["PointsWide"] as? Double ?? 0) == 60)
+        #expect((largeArrow["PointsHigh"] as? Double ?? 0) == 60)
+    }
+
+    @MainActor
+    @Test
+    func previewDisplaySizeMatchesExportedCapePointSize() throws {
+        let image = NSImage(size: NSSize(width: 80, height: 80))
+        image.lockFocus()
+        NSColor.white.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: 80, height: 80)).fill()
+        image.unlockFocus()
+
+        let animation = CursorAnimation(
+            frames: [CursorFrame(image: image, delay: 0.2)],
+            hotspot: CGPoint(x: 8, y: 10),
+            canvasSize: CGSize(width: 80, height: 80)
+        )
+        let theme = CursorTheme(animations: [.arrow: animation])
+        let exportURL = temporaryCapeURL()
+        defer { try? FileManager.default.removeItem(at: exportURL) }
+
+        try CapeExporter().exportCape(
+            name: "Preview Match",
+            author: "Tester",
+            identifier: "local.test.preview-match",
+            theme: theme,
+            sizeMultiplier: 2.3,
+            to: exportURL
+        )
+
+        let arrow = try exportedArrow(at: exportURL)
+        let previewSize = CapeExporter.previewDisplaySize(for: animation, sizeMultiplier: 2.3)
+        let exportedWidth = arrow["PointsWide"] as? Double ?? 0
+        let exportedHeight = arrow["PointsHigh"] as? Double ?? 0
+
+        #expect(abs(exportedWidth - previewSize.width) < 0.001)
+        #expect(abs(exportedHeight - previewSize.height) < 0.001)
+    }
+
+    @MainActor
+    @Test
     func exportsCapeFromEnvironmentWhenRequested() throws {
         guard
             let folderPath = ProcessInfo.processInfo.environment["MAC_MOUSE_CURSOR_EXPORT_FOLDER"],
@@ -424,4 +754,16 @@ struct CapeExporterTests {
         #expect(FileManager.default.fileExists(atPath: exportURL.path))
         print("EXPORTED_CAPE_PATH=\(exportURL.path)")
     }
+}
+
+private func temporaryCapeURL() -> URL {
+    URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+        .appendingPathComponent(UUID().uuidString)
+        .appendingPathExtension("cape")
+}
+
+private func exportedArrow(at url: URL) throws -> [String: Any] {
+    let data = try Data(contentsOf: url)
+    let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any]
+    return ((plist?["Cursors"] as? [String: Any])?["com.apple.coregraphics.Arrow"] as? [String: Any]) ?? [:]
 }

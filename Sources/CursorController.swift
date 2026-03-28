@@ -131,10 +131,100 @@ struct CursorAssignment: Identifiable {
 
 struct CursorTheme {
     let animations: [CursorRole: CursorAnimation]
+    let supplementalAnimations: [SupplementalCursorRole: CursorAnimation]
+
+    init(
+        animations: [CursorRole: CursorAnimation],
+        supplementalAnimations: [SupplementalCursorRole: CursorAnimation] = [:]
+    ) {
+        self.animations = animations
+        self.supplementalAnimations = supplementalAnimations
+    }
 
     subscript(role: CursorRole) -> CursorAnimation? {
         animations[role]
     }
+
+    subscript(role: SupplementalCursorRole) -> CursorAnimation? {
+        supplementalAnimations[role]
+    }
+}
+
+enum SupplementalCursorRole: String, CaseIterable, Identifiable {
+    case contextualMenu
+    case dragCopy
+    case dragLink
+    case disappearingItem
+    case resizeUp
+    case resizeDown
+    case resizeLeft
+    case resizeRight
+    case verticalIBeam
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .contextualMenu: return Localized.string("role.contextualMenu")
+        case .dragCopy: return Localized.string("role.dragCopy")
+        case .dragLink: return Localized.string("role.dragLink")
+        case .disappearingItem: return Localized.string("role.disappearingItem")
+        case .resizeUp: return Localized.string("role.resizeUp")
+        case .resizeDown: return Localized.string("role.resizeDown")
+        case .resizeLeft: return Localized.string("role.resizeLeft")
+        case .resizeRight: return Localized.string("role.resizeRight")
+        case .verticalIBeam: return Localized.string("role.verticalIBeam")
+        }
+    }
+
+    var mousecapeMappingDescription: String {
+        switch self {
+        case .contextualMenu: return "Contextual Menu"
+        case .dragCopy: return "Drag Copy"
+        case .dragLink: return "Drag Link"
+        case .disappearingItem: return "Disappearing Item"
+        case .resizeUp: return "Resize Up"
+        case .resizeDown: return "Resize Down"
+        case .resizeLeft: return "Resize Left"
+        case .resizeRight: return "Resize Right"
+        case .verticalIBeam: return "Vertical IBeam"
+        }
+    }
+
+    var mappedPrimaryRole: CursorRole {
+        switch self {
+        case .contextualMenu: return .link
+        case .dragCopy: return .location
+        case .dragLink: return .alternate
+        case .disappearingItem: return .unavailable
+        case .resizeUp, .resizeDown: return .verticalResize
+        case .resizeLeft, .resizeRight: return .horizontalResize
+        case .verticalIBeam: return .text
+        }
+    }
+}
+
+enum SidebarCursorItem: Hashable, Identifiable {
+    case primary(CursorRole)
+    case supplemental(SupplementalCursorRole)
+
+    var id: String {
+        switch self {
+        case .primary(let role): return "primary.\(role.rawValue)"
+        case .supplemental(let role): return "supplemental.\(role.rawValue)"
+        }
+    }
+}
+
+struct SupplementalCursorAssignment: Identifiable {
+    let role: SupplementalCursorRole
+    let mappedRole: CursorRole
+    let appliedPreview: CursorAnimation?
+    let sourceURL: URL?
+    let isOverride: Bool
+    let isResolved: Bool
+
+    var id: SupplementalCursorRole { role }
 }
 
 @MainActor
@@ -168,15 +258,26 @@ final class CursorController: ObservableObject {
             }
         }
     }
+    @Published var exportSizeMultiplier: Double {
+        didSet {
+            let clamped = Self.clampExportSizeMultiplier(exportSizeMultiplier)
+            if clamped != exportSizeMultiplier {
+                exportSizeMultiplier = clamped
+            }
+        }
+    }
 
     private let parser = AniParser()
     private let capeExporter = CapeExporter()
     private let themeResolver = ThemeResolver()
     private var overrideURLs: [CursorRole: URL] = [:]
+    private var supplementalOverrideURLs: [SupplementalCursorRole: URL] = [:]
+    private var currentTheme = CursorTheme(animations: [:], supplementalAnimations: [:])
     private var statusState: StatusState = .startingUp
 
     init() {
         exportAuthorName = UserDefaults.standard.string(forKey: DefaultsKey.exportAuthorName) ?? ""
+        exportSizeMultiplier = 1.0
     }
 
     func start() {
@@ -186,6 +287,7 @@ final class CursorController: ObservableObject {
         selectedFolderIsValid = false
         resolvedRoleCount = 0
         overrideURLs = [:]
+        supplementalOverrideURLs = [:]
         setStatus(.chooseCursorFolder)
     }
 
@@ -213,6 +315,9 @@ final class CursorController: ObservableObject {
         if previousURL != normalizedNewURL, !overrideURLs.isEmpty {
             overrideURLs.removeAll()
         }
+        if previousURL != normalizedNewURL, !supplementalOverrideURLs.isEmpty {
+            supplementalOverrideURLs.removeAll()
+        }
         reload()
     }
 
@@ -232,6 +337,30 @@ final class CursorController: ObservableObject {
             return
         }
         overrideURLs[role] = url
+        reload()
+    }
+
+    func chooseOverride(for role: SupplementalCursorRole) {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.data]
+        panel.directoryURL = supplementalOverrideURLs[role]?.deletingLastPathComponent() ?? selectedFolderURL
+        panel.prompt = Localized.string("panel.chooseCursor")
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let ext = url.pathExtension.lowercased()
+        guard ext == "ani" || ext == "cur" else {
+            setStatus(.supportedFiles)
+            return
+        }
+        if let inheritedURL = effectiveSupplementalInheritedSourceURL(for: role),
+           inheritedURL.standardizedFileURL == url.standardizedFileURL {
+            supplementalOverrideURLs.removeValue(forKey: role)
+        } else {
+            supplementalOverrideURLs[role] = url
+        }
         reload()
     }
 
@@ -272,6 +401,7 @@ final class CursorController: ObservableObject {
                 author: author,
                 identifier: "local.\(Bundle.main.bundleIdentifier ?? "capeforge").\(UUID().uuidString.lowercased())",
                 theme: resolution.theme,
+                sizeMultiplier: exportSizeMultiplier,
                 to: url
             )
             setStatus(.exportSuccess(url.lastPathComponent))
@@ -283,6 +413,7 @@ final class CursorController: ObservableObject {
     func reload() {
         do {
             let resolution = try loadTheme()
+            currentTheme = resolution.theme
             assignments = makeAssignments(
                 from: resolution.theme,
                 resolvedFiles: resolution.filesByRole,
@@ -293,6 +424,7 @@ final class CursorController: ObservableObject {
             let folderName = selectedFolderURL?.lastPathComponent ?? ""
             setStatus(.loaded(folderName: folderName, resolvedRoleCount: resolvedRoleCount, totalRoleCount: CursorRole.allCases.count))
         } catch {
+            currentTheme = CursorTheme(animations: [:], supplementalAnimations: [:])
             assignments = unresolvedAssignments()
             resolvedRoleCount = 0
             selectedFolderIsValid = false
@@ -304,12 +436,33 @@ final class CursorController: ObservableObject {
         assignments.first(where: { $0.role == role })
     }
 
+    func supplementalAssignment(for role: SupplementalCursorRole) -> SupplementalCursorAssignment {
+        let baseRole = role.mappedPrimaryRole
+        let baseAssignment = assignment(for: baseRole)
+        let overrideURL = supplementalOverrideURLs[role]
+        let inheritedURL = baseAssignment?.sourceURL
+        let isOverride = {
+            guard let overrideURL else { return false }
+            guard let inheritedURL else { return true }
+            return overrideURL.standardizedFileURL != inheritedURL.standardizedFileURL
+        }()
+        return SupplementalCursorAssignment(
+            role: role,
+            mappedRole: baseRole,
+            appliedPreview: currentTheme[role] ?? baseAssignment?.appliedPreview,
+            sourceURL: isOverride ? overrideURL : inheritedURL,
+            isOverride: isOverride,
+            isResolved: (currentTheme[role] ?? baseAssignment?.appliedPreview) != nil
+        )
+    }
+
     private func loadTheme() throws -> (theme: CursorTheme, filesByRole: [CursorRole: URL], fallbackRoles: Set<CursorRole>) {
         guard let baseDirectory = selectedFolderURL else {
             throw CursorError.missingTheme(Localized.string("error.noThemeFolderSelected"))
         }
 
         var animations: [CursorRole: CursorAnimation] = [:]
+        var supplementalAnimations: [SupplementalCursorRole: CursorAnimation] = [:]
         var parsedAnimationsByURL: [URL: CursorAnimation] = [:]
         let resolvedTheme = try themeResolver.resolveTheme(in: baseDirectory)
         var resolvedFiles = resolvedTheme.filesByRole
@@ -334,11 +487,40 @@ final class CursorController: ObservableObject {
             animations[role] = try parsedAnimation(for: url)
         }
 
+        for role in SupplementalCursorRole.allCases {
+            if let override = supplementalOverrideURLs[role] {
+                if FileManager.default.fileExists(atPath: override.path) {
+                    if let inheritedURL = effectiveSupplementalInheritedSourceURL(for: role, resolvedFiles: resolvedFiles),
+                       inheritedURL.standardizedFileURL == override.standardizedFileURL,
+                       let baseAnimation = animations[role.mappedPrimaryRole] {
+                        supplementalOverrideURLs.removeValue(forKey: role)
+                        supplementalAnimations[role] = baseAnimation
+                    } else {
+                        supplementalAnimations[role] = try parsedAnimation(for: override)
+                    }
+                    continue
+                } else {
+                    supplementalOverrideURLs.removeValue(forKey: role)
+                }
+            }
+            if let baseAnimation = animations[role.mappedPrimaryRole] {
+                supplementalAnimations[role] = baseAnimation
+            }
+        }
+
         guard animations[.arrow] != nil else {
             throw CursorError.missingTheme(baseDirectory.path)
         }
 
-        return (CursorTheme(animations: animations), resolvedFiles, resolvedTheme.fallbackRoles)
+        return (CursorTheme(animations: animations, supplementalAnimations: supplementalAnimations), resolvedFiles, resolvedTheme.fallbackRoles)
+    }
+
+    var exportSizePercentageText: String {
+        "\(Int((exportSizeMultiplier * 100).rounded()))%"
+    }
+
+    private static func clampExportSizeMultiplier(_ value: Double) -> Double {
+        min(max(value, 1.0), 3.0)
     }
 
     private func makeAssignments(from theme: CursorTheme, resolvedFiles: [CursorRole: URL], fallbackRoles: Set<CursorRole>) -> [CursorAssignment] {
@@ -351,7 +533,7 @@ final class CursorController: ObservableObject {
                 return overrideURL.standardizedFileURL != autoResolved.standardizedFileURL
             }()
             let applied = theme[role]
-            return CursorAssignment(
+        return CursorAssignment(
                 role: role,
                 appliedPreview: applied,
                 sourceURL: overrideURL ?? autoResolved,
@@ -382,6 +564,17 @@ final class CursorController: ObservableObject {
             "selectedBorder",
             "selectedStyle"
         ].forEach { UserDefaults.standard.removeObject(forKey: $0) }
+    }
+
+    private func effectiveSupplementalInheritedSourceURL(
+        for role: SupplementalCursorRole,
+        resolvedFiles: [CursorRole: URL]? = nil
+    ) -> URL? {
+        let mappedRole = role.mappedPrimaryRole
+        if let primaryOverride = overrideURLs[mappedRole], FileManager.default.fileExists(atPath: primaryOverride.path) {
+            return primaryOverride
+        }
+        return resolvedFiles?[mappedRole]
     }
 
     private func capeDisplayName() -> String {

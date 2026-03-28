@@ -1,0 +1,304 @@
+# portugueseBrazil
+
+[app.chooseCursorFolder]
+Escolha uma pasta de cursores
+
+[app.rolesReady]
+%d funções prontas
+
+[app.folderRequired]
+Pasta necessária
+
+[app.openSettings]
+Abrir Ajustes
+
+[app.quit]
+Sair
+
+[app.cursors]
+Cursores
+
+[app.additionalCursors]
+Cursores adicionais
+
+[app.additionalCursorUses]
+Usa %@
+
+[app.additionalCursorHint]
+Normalmente você não precisará alterar estes itens.
+Eles cobrem estados de cursor do macOS que não são usados com frequência e, por padrão, são mapeados para o cursor existente mais semelhante.
+
+[app.noCursorLoaded]
+Nenhum cursor carregado
+
+[app.loadCursorFolderHint]
+Carregue uma pasta de cursores e depois escolha uma função na lista à esquerda para visualizar.
+
+[app.exportToMousecape]
+Exportar como arquivo .cape…
+
+[app.automaticMatchFailed]
+Falha na correspondência automática
+
+[app.automaticMatchFailedArrowFallback]
+Falha na correspondência automática · usando o cursor padrão
+
+[app.manualOverride]
+Substituição manual
+
+[app.automaticallyMatched]
+Correspondência automática
+
+[app.automaticallyMatchedFromFolder]
+Arquivo associado automaticamente da pasta
+
+[app.changeCursorFile]
+Alterar arquivo do cursor…
+
+[app.arrowFallbackDescription]
+Não foi encontrado um cursor dedicado para esta função, então o cursor padrão do tema está sendo usado no lugar.
+
+[app.automaticMatchKeywords]
+Palavras-chave de correspondência automática
+
+[app.inheritedMatchKeywords]
+Palavras-chave de correspondência herdadas
+
+[app.mousecape]
+Mousecape
+
+[app.currentSource]
+Fonte atual
+
+[app.automaticallyMatchedInsideSelectedFolder]
+Correspondência automática dentro da pasta selecionada
+
+[app.status]
+Status
+
+[app.automaticMatchFailedArrowFallbackShort]
+Falha na correspondência automática (usando cursor padrão)
+
+[app.cursorFolder]
+Pasta de cursores
+
+[app.noFolderSelected]
+Nenhuma pasta selecionada
+
+[app.chooseFolder]
+Escolher pasta…
+
+[app.cursorWillAppearHere]
+O cursor aparecerá aqui depois que você carregar um.
+
+[export.authorLabel]
+Autor
+
+[export.authorPlaceholder]
+Digite o nome do autor para o Mousecape
+
+[export.sizeLabel]
+Tamanho do cursor
+
+[export.emptyAuthorTitle]
+Usar o nome de usuário do Mac?
+
+[export.emptyAuthorMessage]
+Se você deixar o campo de autor vazio, este cape será exportado com "%@" como autor.
+
+[export.useMacUserName]
+Usar nome de usuário do Mac
+
+[export.cancel]
+Cancelar
+
+[export.unknownAuthor]
+Desconhecido
+
+[role.arrow]
+Seleção padrão
+
+[role.text]
+Seleção de texto
+
+[role.link]
+Seleção de link
+
+[role.location]
+Arrastar
+
+[role.precision]
+Seleção precisa
+
+[role.move]
+Mover
+
+[role.unavailable]
+Indisponível
+
+[role.busy]
+Ocupado
+
+[role.working]
+Aguardando
+
+[role.help]
+Ajuda
+
+[role.handwriting]
+Escrita à mão
+
+[role.person]
+Seleção de célula
+
+[role.alternate]
+Alias
+
+[role.verticalResize]
+Redimensionamento vertical
+
+[role.horizontalResize]
+Redimensionamento horizontal
+
+[role.diagonalResizeNWSE]
+Redimensionamento diagonal 1
+
+[role.diagonalResizeNESW]
+Redimensionamento diagonal 2
+
+[role.contextualMenu]
+Menu contextual
+
+[role.dragCopy]
+Arrastar para copiar
+
+[role.dragLink]
+Arrastar para link
+
+[role.disappearingItem]
+Item desaparecendo
+
+[role.resizeUp]
+Redimensionar para cima
+
+[role.resizeDown]
+Redimensionar para baixo
+
+[role.resizeLeft]
+Redimensionar para a esquerda
+
+[role.resizeRight]
+Redimensionar para a direita
+
+[role.verticalIBeam]
+Seleção vertical de texto
+
+[status.startingUp]
+Iniciando...
+
+[status.chooseCursorFolder]
+Escolha uma pasta de cursores.
+
+[status.supportedFiles]
+Os arquivos compatíveis são .ani e .cur.
+
+[status.exportSuccess]
+Cape do Mousecape exportado: %@
+
+[status.exportFailure]
+Falha ao exportar o cape: %@
+
+[status.loaded]
+%@ carregado · %d/%d funções mapeadas
+
+[status.loadFailure]
+Falha ao carregar: %@
+
+[panel.chooseFolder]
+Escolher pasta
+
+[panel.chooseCursor]
+Escolher cursor
+
+[panel.export]
+Exportar
+
+[menu.language]
+Idioma
+
+[menu.language.korean]
+한국어
+
+[menu.language.english]
+English
+
+[menu.language.japanese]
+日本語
+
+[menu.language.simplifiedChinese]
+简体中文
+
+[menu.language.traditionalChinese]
+繁體中文
+
+[menu.language.german]
+Deutsch
+
+[menu.language.french]
+Français
+
+[menu.language.spanish]
+Español
+
+[menu.language.portugueseBrazil]
+Português (Brasil)
+
+[menu.language.italian]
+Italiano
+
+[menu.language.russian]
+Русский
+
+[error.noThemeFolderSelected]
+Nenhuma pasta de tema foi selecionada.
+
+[error.themeFileMissing]
+Arquivo de tema ausente: %@
+
+[error.aniParsingFailed]
+Falha ao analisar ANI: %@
+
+[error.unsupportedCursorPayload]
+Não foi possível ler o quadro do cursor como imagem.
+
+[error.invalidThemeSelection.noCursorFiles]
+Esta pasta não contém arquivos de cursor que possam ser usados diretamente.
+Escolha uma pasta que contenha arquivos .ani ou .cur no nível superior.
+
+[error.unsupportedExtension]
+Extensão não compatível: %@
+
+[error.invalidRiffAconHeader]
+O arquivo não possui um cabeçalho RIFF ACON válido.
+
+[error.invalidChunkLength]
+O comprimento do bloco é inválido.
+
+[error.noFrames]
+O arquivo não contém quadros.
+
+[error.invalidIconChunkLength]
+O comprimento do bloco icon é inválido.
+
+[error.curTooShort]
+Os dados CUR são curtos demais.
+
+[error.invalidCurHeader]
+O arquivo não contém um cabeçalho CUR válido.
+
+[error.invalidCurEmbeddedRange]
+O intervalo da imagem CUR incorporada é inválido.
+
+[error.noCursorsToExport]
+Não há cursores para exportar.
+

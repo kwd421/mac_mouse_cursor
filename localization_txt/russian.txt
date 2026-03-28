@@ -1,0 +1,304 @@
+# russian
+
+[app.chooseCursorFolder]
+Выберите папку с курсорами
+
+[app.rolesReady]
+Подготовлено ролей: %d
+
+[app.folderRequired]
+Требуется папка
+
+[app.openSettings]
+Открыть настройки
+
+[app.quit]
+Выйти
+
+[app.cursors]
+Курсоры
+
+[app.additionalCursors]
+Дополнительные курсоры
+
+[app.additionalCursorUses]
+Использует %@
+
+[app.additionalCursorHint]
+Обычно вам не нужно менять эти элементы.
+Они охватывают редко используемые состояния курсора macOS и по умолчанию сопоставляются с наиболее похожим существующим курсором.
+
+[app.noCursorLoaded]
+Нет загруженных курсоров
+
+[app.loadCursorFolderHint]
+Загрузите папку с курсорами, затем выберите роль в списке слева для предпросмотра.
+
+[app.exportToMousecape]
+Экспортировать как файл .cape…
+
+[app.automaticMatchFailed]
+Автосопоставление не удалось
+
+[app.automaticMatchFailedArrowFallback]
+Автосопоставление не удалось · используется обычный курсор
+
+[app.manualOverride]
+Ручное назначение
+
+[app.automaticallyMatched]
+Автосопоставление
+
+[app.automaticallyMatchedFromFolder]
+Файл автоматически сопоставлен из папки
+
+[app.changeCursorFile]
+Изменить файл курсора…
+
+[app.arrowFallbackDescription]
+Для этой роли не найден отдельный курсор, поэтому используется обычный курсор темы.
+
+[app.automaticMatchKeywords]
+Ключевые слова автосопоставления
+
+[app.inheritedMatchKeywords]
+Унаследованные ключевые слова сопоставления
+
+[app.mousecape]
+Mousecape
+
+[app.currentSource]
+Текущий источник
+
+[app.automaticallyMatchedInsideSelectedFolder]
+Автосопоставление внутри выбранной папки
+
+[app.status]
+Состояние
+
+[app.automaticMatchFailedArrowFallbackShort]
+Автосопоставление не удалось (используется обычный курсор)
+
+[app.cursorFolder]
+Папка курсоров
+
+[app.noFolderSelected]
+Папка не выбрана
+
+[app.chooseFolder]
+Выбрать папку…
+
+[app.cursorWillAppearHere]
+Курсор появится здесь после загрузки.
+
+[export.authorLabel]
+Автор
+
+[export.authorPlaceholder]
+Введите имя автора для Mousecape
+
+[export.sizeLabel]
+Размер курсора
+
+[export.emptyAuthorTitle]
+Использовать имя пользователя Mac?
+
+[export.emptyAuthorMessage]
+Если оставить поле автора пустым, этот cape будет экспортирован с именем автора "%@".
+
+[export.useMacUserName]
+Использовать имя пользователя Mac
+
+[export.cancel]
+Отмена
+
+[export.unknownAuthor]
+Неизвестно
+
+[role.arrow]
+Обычный выбор
+
+[role.text]
+Выбор текста
+
+[role.link]
+Выбор ссылки
+
+[role.location]
+Перетаскивание
+
+[role.precision]
+Точный выбор
+
+[role.move]
+Перемещение
+
+[role.unavailable]
+Недоступно
+
+[role.busy]
+Занят
+
+[role.working]
+Ожидание
+
+[role.help]
+Справка
+
+[role.handwriting]
+Рукописный ввод
+
+[role.person]
+Выбор ячейки
+
+[role.alternate]
+Псевдоним
+
+[role.verticalResize]
+Вертикальное изменение размера
+
+[role.horizontalResize]
+Горизонтальное изменение размера
+
+[role.diagonalResizeNWSE]
+Диагональное изменение размера 1
+
+[role.diagonalResizeNESW]
+Диагональное изменение размера 2
+
+[role.contextualMenu]
+Контекстное меню
+
+[role.dragCopy]
+Перетаскивание для копирования
+
+[role.dragLink]
+Перетаскивание для ссылки
+
+[role.disappearingItem]
+Исчезающий элемент
+
+[role.resizeUp]
+Изменение размера вверх
+
+[role.resizeDown]
+Изменение размера вниз
+
+[role.resizeLeft]
+Изменение размера влево
+
+[role.resizeRight]
+Изменение размера вправо
+
+[role.verticalIBeam]
+Вертикальное выделение текста
+
+[status.startingUp]
+Запуск...
+
+[status.chooseCursorFolder]
+Выберите папку с курсорами.
+
+[status.supportedFiles]
+Поддерживаются файлы .ani и .cur.
+
+[status.exportSuccess]
+Cape для Mousecape экспортирован: %@
+
+[status.exportFailure]
+Не удалось экспортировать cape: %@
+
+[status.loaded]
+Загружено %@ · сопоставлено %d/%d ролей
+
+[status.loadFailure]
+Ошибка загрузки: %@
+
+[panel.chooseFolder]
+Выбрать папку
+
+[panel.chooseCursor]
+Выбрать курсор
+
+[panel.export]
+Экспорт
+
+[menu.language]
+Язык
+
+[menu.language.korean]
+한국어
+
+[menu.language.english]
+English
+
+[menu.language.japanese]
+日本語
+
+[menu.language.simplifiedChinese]
+简体中文
+
+[menu.language.traditionalChinese]
+繁體中文
+
+[menu.language.german]
+Deutsch
+
+[menu.language.french]
+Français
+
+[menu.language.spanish]
+Español
+
+[menu.language.portugueseBrazil]
+Português (Brasil)
+
+[menu.language.italian]
+Italiano
+
+[menu.language.russian]
+Русский
+
+[error.noThemeFolderSelected]
+Папка темы не выбрана.
+
+[error.themeFileMissing]
+Файл темы отсутствует: %@
+
+[error.aniParsingFailed]
+Ошибка разбора ANI: %@
+
+[error.unsupportedCursorPayload]
+Не удалось прочитать кадр курсора как изображение.
+
+[error.invalidThemeSelection.noCursorFiles]
+В этой папке нет файлов курсоров, которые можно использовать напрямую.
+Выберите папку, в верхнем уровне которой есть файлы .ani или .cur.
+
+[error.unsupportedExtension]
+Неподдерживаемое расширение: %@
+
+[error.invalidRiffAconHeader]
+Файл не содержит корректный заголовок RIFF ACON.
+
+[error.invalidChunkLength]
+Недопустимая длина блока.
+
+[error.noFrames]
+Файл не содержит кадров.
+
+[error.invalidIconChunkLength]
+Недопустимая длина блока icon.
+
+[error.curTooShort]
+Данные CUR слишком короткие.
+
+[error.invalidCurHeader]
+Файл не содержит корректный заголовок CUR.
+
+[error.invalidCurEmbeddedRange]
+Недопустимый диапазон встроенного изображения CUR.
+
+[error.noCursorsToExport]
+Нет курсоров для экспорта.
+

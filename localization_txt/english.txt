@@ -1,0 +1,310 @@
+# english
+
+[app.chooseCursorFolder]
+Choose a cursor folder
+
+[app.rolesReady]
+%d roles ready
+
+[app.folderRequired]
+Folder required
+
+[app.openSettings]
+Open Settings
+
+[app.quit]
+Quit
+
+[app.cursors]
+Cursors
+
+[app.additionalCursors]
+Additional Cursors
+
+[app.additionalCursorUses]
+Uses %@
+
+[app.additionalCursorHint]
+Most people won't need to change these.
+They cover macOS cursor states that aren't often used and are mapped to the most similar existing cursor by default.
+
+[app.noCursorLoaded]
+No cursor loaded
+
+[app.loadCursorFolderHint]
+Load a cursor folder, then choose a role from the list to preview it.
+
+[app.exportToMousecape]
+Export as .cape File…
+
+[app.automaticMatchFailed]
+Automatic matching failed
+
+[app.automaticMatchFailedArrowFallback]
+Automatic matching failed · using arrow fallback
+
+[app.manualOverride]
+Manual override
+
+[app.automaticallyMatched]
+Automatically matched
+
+[app.automaticallyMatchedFromFolder]
+Automatically matched from the folder
+
+[app.changeCursorFile]
+Change Cursor File…
+
+[app.arrowFallbackDescription]
+A dedicated cursor for this role was not found, so the theme's arrow cursor is being used instead.
+
+[app.automaticMatchKeywords]
+Automatic Match Keywords
+
+[app.inheritedMatchKeywords]
+Inherited Match Keywords
+
+[app.mousecape]
+Mousecape
+
+[app.currentSource]
+Current Source
+
+[app.automaticallyMatchedInsideSelectedFolder]
+Automatically matched inside the selected folder
+
+[app.status]
+Status
+
+[app.automaticMatchFailedArrowFallbackShort]
+Automatic matching failed (using arrow fallback)
+
+[app.cursorFolder]
+Cursor Folder
+
+[app.noFolderSelected]
+No folder selected
+
+[app.chooseFolder]
+Choose Folder…
+
+[app.cursorWillAppearHere]
+The cursor will appear here after you load one.
+
+[preview.large]
+Large Preview
+
+[preview.actualSize]
+Actual Size
+
+[export.authorLabel]
+Author
+
+[export.authorPlaceholder]
+Enter the author name for Mousecape
+
+[export.sizeLabel]
+Cursor Size
+
+[export.emptyAuthorTitle]
+Use your Mac account name?
+
+[export.emptyAuthorMessage]
+If you leave the author field empty, this cape will be exported with "%@" as the author.
+
+[export.useMacUserName]
+Use Mac Account Name
+
+[export.cancel]
+Cancel
+
+[export.unknownAuthor]
+Unknown Author
+
+[role.arrow]
+Arrow
+
+[role.text]
+Text Selection
+
+[role.link]
+Link Selection
+
+[role.location]
+Drag
+
+[role.precision]
+Precision Selection
+
+[role.move]
+Move
+
+[role.unavailable]
+Unavailable
+
+[role.busy]
+Busy
+
+[role.working]
+Wait
+
+[role.help]
+Help
+
+[role.handwriting]
+Handwriting
+
+[role.person]
+Cell Selection
+
+[role.alternate]
+Alias
+
+[role.verticalResize]
+Vertical Resize
+
+[role.horizontalResize]
+Horizontal Resize
+
+[role.diagonalResizeNWSE]
+Diagonal Resize 1
+
+[role.diagonalResizeNESW]
+Diagonal Resize 2
+
+[role.contextualMenu]
+Contextual Menu
+
+[role.dragCopy]
+Drag Copy
+
+[role.dragLink]
+Drag Link
+
+[role.disappearingItem]
+Disappearing Item
+
+[role.resizeUp]
+Resize Up
+
+[role.resizeDown]
+Resize Down
+
+[role.resizeLeft]
+Resize Left
+
+[role.resizeRight]
+Resize Right
+
+[role.verticalIBeam]
+Vertical Text Selection
+
+[status.startingUp]
+Starting up...
+
+[status.chooseCursorFolder]
+Choose a cursor folder.
+
+[status.supportedFiles]
+Supported files are .ani and .cur.
+
+[status.exportSuccess]
+Exported Mousecape cape: %@
+
+[status.exportFailure]
+Cape export failed: %@
+
+[status.loaded]
+Loaded %@ · %d/%d roles mapped
+
+[status.loadFailure]
+Load failed: %@
+
+[panel.chooseFolder]
+Choose Folder
+
+[panel.chooseCursor]
+Choose Cursor
+
+[panel.export]
+Export
+
+[menu.language]
+Language
+
+[menu.language.korean]
+한국어
+
+[menu.language.english]
+English
+
+[menu.language.japanese]
+日本語
+
+[menu.language.simplifiedChinese]
+简体中文
+
+[menu.language.traditionalChinese]
+繁體中文
+
+[menu.language.german]
+Deutsch
+
+[menu.language.french]
+Français
+
+[menu.language.spanish]
+Español
+
+[menu.language.portugueseBrazil]
+Português (Brasil)
+
+[menu.language.italian]
+Italiano
+
+[menu.language.russian]
+Русский
+
+[error.noThemeFolderSelected]
+No theme folder is selected.
+
+[error.themeFileMissing]
+Theme file is missing: %@
+
+[error.aniParsingFailed]
+ANI parsing failed: %@
+
+[error.unsupportedCursorPayload]
+The cursor frame could not be read as an image.
+
+[error.invalidThemeSelection.noCursorFiles]
+This folder does not contain cursor files that can be used directly.
+Choose a folder that contains .ani or .cur files at the top level.
+
+[error.unsupportedExtension]
+Unsupported file extension: %@
+
+[error.invalidRiffAconHeader]
+The file does not have a RIFF ACON header.
+
+[error.invalidChunkLength]
+The chunk length is invalid.
+
+[error.noFrames]
+The file does not contain any frames.
+
+[error.invalidIconChunkLength]
+The icon chunk length is invalid.
+
+[error.curTooShort]
+The CUR data is too short.
+
+[error.invalidCurHeader]
+The file does not contain a valid CUR header.
+
+[error.invalidCurEmbeddedRange]
+The embedded CUR image range is invalid.
+
+[error.noCursorsToExport]
+There are no cursors to export.
+

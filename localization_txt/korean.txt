@@ -1,0 +1,310 @@
+# korean
+
+[app.chooseCursorFolder]
+커서 폴더를 선택하세요
+
+[app.rolesReady]
+%d개 역할 준비됨
+
+[app.folderRequired]
+폴더 확인 필요
+
+[app.openSettings]
+설정 열기
+
+[app.quit]
+종료
+
+[app.cursors]
+커서
+
+[app.additionalCursors]
+추가 커서
+
+[app.additionalCursorUses]
+%@ 사용
+
+[app.additionalCursorHint]
+보통은 이 항목들을 따로 바꿀 필요가 없습니다.
+자주 쓰이지 않는 macOS 커서 상태를 위한 항목이며, 기본적으로 가장 비슷한 기존 커서에 연결됩니다.
+
+[app.noCursorLoaded]
+불러온 커서가 없습니다
+
+[app.loadCursorFolderHint]
+커서 폴더를 불러온 뒤 왼쪽 목록에서 역할을 고르면 해당 커서를 표시합니다.
+
+[app.exportToMousecape]
+.cape 파일로 내보내기…
+
+[app.automaticMatchFailed]
+자동 매핑 실패
+
+[app.automaticMatchFailedArrowFallback]
+자동 매핑 실패 · 일반 커서 대체
+
+[app.manualOverride]
+수동 지정
+
+[app.automaticallyMatched]
+자동 매핑
+
+[app.automaticallyMatchedFromFolder]
+폴더에서 자동 매핑된 파일
+
+[app.changeCursorFile]
+커서 파일 변경…
+
+[app.arrowFallbackDescription]
+자동 매칭되는 전용 커서를 찾지 못해 이 테마의 일반 커서로 대체했습니다.
+
+[app.automaticMatchKeywords]
+자동 매핑 키워드
+
+[app.inheritedMatchKeywords]
+상속된 매핑 키워드
+
+[app.mousecape]
+Mousecape
+
+[app.currentSource]
+현재 소스
+
+[app.automaticallyMatchedInsideSelectedFolder]
+선택한 폴더 안에서 자동 매핑
+
+[app.status]
+상태
+
+[app.automaticMatchFailedArrowFallbackShort]
+자동 매핑 실패 (일반 커서 대체)
+
+[app.cursorFolder]
+커서 폴더
+
+[app.noFolderSelected]
+선택된 폴더 없음
+
+[app.chooseFolder]
+폴더 선택…
+
+[app.cursorWillAppearHere]
+커서를 불러오면 여기에 표시됩니다.
+
+[preview.large]
+크게 보기
+
+[preview.actualSize]
+실제 크기
+
+[export.authorLabel]
+제작자명
+
+[export.authorPlaceholder]
+Mousecape에 표시할 제작자명을 입력하세요
+
+[export.sizeLabel]
+커서 크기
+
+[export.emptyAuthorTitle]
+맥 사용자 이름으로 내보낼까요?
+
+[export.emptyAuthorMessage]
+제작자명을 비워두면 이 cape는 "%@" 이름으로 내보내집니다.
+
+[export.useMacUserName]
+맥 사용자 이름 사용
+
+[export.cancel]
+취소
+
+[export.unknownAuthor]
+알 수 없음
+
+[role.arrow]
+일반 선택
+
+[role.text]
+텍스트 선택
+
+[role.link]
+링크 선택
+
+[role.location]
+드래그
+
+[role.precision]
+정밀도 선택
+
+[role.move]
+이동
+
+[role.unavailable]
+사용 불가
+
+[role.busy]
+사용 중
+
+[role.working]
+대기
+
+[role.help]
+도움말
+
+[role.handwriting]
+손글씨
+
+[role.person]
+셀 선택
+
+[role.alternate]
+바로가기
+
+[role.verticalResize]
+수직 크기 조절
+
+[role.horizontalResize]
+수평 크기 조절
+
+[role.diagonalResizeNWSE]
+대각선 크기 조절 1
+
+[role.diagonalResizeNESW]
+대각선 크기 조절 2
+
+[role.contextualMenu]
+컨텍스트 메뉴
+
+[role.dragCopy]
+드래그 복사
+
+[role.dragLink]
+드래그 링크
+
+[role.disappearingItem]
+사라지는 항목
+
+[role.resizeUp]
+위로 크기 조절
+
+[role.resizeDown]
+아래로 크기 조절
+
+[role.resizeLeft]
+왼쪽으로 크기 조절
+
+[role.resizeRight]
+오른쪽으로 크기 조절
+
+[role.verticalIBeam]
+세로 텍스트 선택
+
+[status.startingUp]
+초기화 중...
+
+[status.chooseCursorFolder]
+커서 폴더를 선택하세요.
+
+[status.supportedFiles]
+지원하는 파일은 .ani 또는 .cur 입니다.
+
+[status.exportSuccess]
+Mousecape용 cape 내보내기 완료: %@
+
+[status.exportFailure]
+cape 내보내기 실패: %@
+
+[status.loaded]
+로드 완료: %@ · %d/%d개 역할 연결됨
+
+[status.loadFailure]
+불러오기 실패: %@
+
+[panel.chooseFolder]
+폴더 선택
+
+[panel.chooseCursor]
+커서 선택
+
+[panel.export]
+내보내기
+
+[menu.language]
+언어
+
+[menu.language.korean]
+한국어
+
+[menu.language.english]
+English
+
+[menu.language.japanese]
+日本語
+
+[menu.language.simplifiedChinese]
+简体中文
+
+[menu.language.traditionalChinese]
+繁體中文
+
+[menu.language.german]
+Deutsch
+
+[menu.language.french]
+Français
+
+[menu.language.spanish]
+Español
+
+[menu.language.portugueseBrazil]
+Português (Brasil)
+
+[menu.language.italian]
+Italiano
+
+[menu.language.russian]
+Русский
+
+[error.noThemeFolderSelected]
+테마 폴더가 선택되지 않았습니다.
+
+[error.themeFileMissing]
+테마 파일이 없습니다: %@
+
+[error.aniParsingFailed]
+ANI 파싱 실패: %@
+
+[error.unsupportedCursorPayload]
+커서 프레임을 이미지로 읽지 못했습니다.
+
+[error.invalidThemeSelection.noCursorFiles]
+이 폴더에는 바로 적용할 커서 파일이 없습니다.
+.ani 또는 .cur 파일이 직접 들어 있는 폴더를 선택하세요.
+
+[error.unsupportedExtension]
+지원하지 않는 확장자입니다: %@
+
+[error.invalidRiffAconHeader]
+RIFF ACON 헤더가 아닙니다.
+
+[error.invalidChunkLength]
+청크 길이가 잘못되었습니다.
+
+[error.noFrames]
+프레임이 없습니다.
+
+[error.invalidIconChunkLength]
+icon 청크 길이가 잘못되었습니다.
+
+[error.curTooShort]
+CUR 데이터가 너무 짧습니다.
+
+[error.invalidCurHeader]
+CUR 헤더가 아닙니다.
+
+[error.invalidCurEmbeddedRange]
+CUR 내부 이미지 범위가 잘못되었습니다.
+
+[error.noCursorsToExport]
+내보낼 커서가 없습니다.
+

@@ -52,6 +52,46 @@ final class LocalizationController: ObservableObject {
 }
 
 enum Localized {
+    static var currentLanguage: AppLanguage {
+        LocalizationController.shared.selectedLanguage
+            ?? inferredLanguage(from: Locale.preferredLanguages.first)
+    }
+
+    static func inferredLanguage(from preferredLanguage: String?) -> AppLanguage {
+        let preferred = preferredLanguage?.lowercased() ?? "en"
+        if preferred.hasPrefix("ko") {
+            return .korean
+        }
+        if preferred.hasPrefix("ja") {
+            return .japanese
+        }
+        if preferred.contains("hant") {
+            return .traditionalChinese
+        }
+        if preferred.hasPrefix("zh") {
+            return .simplifiedChinese
+        }
+        if preferred.hasPrefix("de") {
+            return .german
+        }
+        if preferred.hasPrefix("fr") {
+            return .french
+        }
+        if preferred.hasPrefix("es") {
+            return .spanish
+        }
+        if preferred.hasPrefix("pt") {
+            return .portugueseBrazil
+        }
+        if preferred.hasPrefix("it") {
+            return .italian
+        }
+        if preferred.hasPrefix("ru") {
+            return .russian
+        }
+        return .english
+    }
+
     static func string(_ key: String) -> String {
         activeTable[key] ?? english[key] ?? key
     }
@@ -61,64 +101,21 @@ enum Localized {
     }
 
     private static var activeTable: [String: String] {
-        let language: String
-        switch LocalizationController.shared.selectedLanguage {
-        case .korean?:
-            language = "ko"
-        case .english?:
-            language = "en"
-        case .japanese?:
-            language = "ja"
-        case .simplifiedChinese?:
-            language = "zh-Hans"
-        case .traditionalChinese?:
-            language = "zh-Hant"
-        case .german?:
-            language = "de"
-        case .french?:
-            language = "fr"
-        case .spanish?:
-            language = "es"
-        case .portugueseBrazil?:
-            language = "pt-BR"
-        case .italian?:
-            language = "it"
-        case .russian?:
-            language = "ru"
-        case nil:
-            language = Locale.preferredLanguages.first?.lowercased() ?? "en"
+        let language = currentLanguage
+
+        switch language {
+        case .korean: return korean
+        case .english: return english
+        case .japanese: return japanese
+        case .simplifiedChinese: return simplifiedChinese
+        case .traditionalChinese: return traditionalChinese
+        case .german: return german
+        case .french: return french
+        case .spanish: return spanish
+        case .portugueseBrazil: return portugueseBrazil
+        case .italian: return italian
+        case .russian: return russian
         }
-        if language.hasPrefix("ko") {
-            return korean
-        }
-        if language.hasPrefix("ja") {
-            return japanese
-        }
-        if language.contains("hant") {
-            return traditionalChinese
-        }
-        if language.hasPrefix("zh") {
-            return simplifiedChinese
-        }
-        if language.hasPrefix("de") {
-            return german
-        }
-        if language.hasPrefix("fr") {
-            return french
-        }
-        if language.hasPrefix("es") {
-            return spanish
-        }
-        if language.hasPrefix("pt") {
-            return portugueseBrazil
-        }
-        if language.hasPrefix("it") {
-            return italian
-        }
-        if language.hasPrefix("ru") {
-            return russian
-        }
-        return english
     }
 
     private static let english: [String: String] = [
@@ -128,9 +125,12 @@ enum Localized {
         "app.openSettings": "Open Settings",
         "app.quit": "Quit",
         "app.cursors": "Cursors",
+        "app.additionalCursors": "Additional Cursors",
+        "app.additionalCursorUses": "Uses %@",
+        "app.additionalCursorHint": "Most people won't need to change these.\nThey cover macOS cursor states that aren't often used and are mapped to the most similar existing cursor by default.",
         "app.noCursorLoaded": "No cursor loaded",
         "app.loadCursorFolderHint": "Load a cursor folder, then choose a role from the list to preview it.",
-        "app.exportToMousecape": "Export to Mousecape…",
+        "app.exportToMousecape": "Export as .cape File…",
         "app.automaticMatchFailed": "Automatic matching failed",
         "app.automaticMatchFailedArrowFallback": "Automatic matching failed · using arrow fallback",
         "app.manualOverride": "Manual override",
@@ -138,7 +138,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "Automatically matched from the folder",
         "app.changeCursorFile": "Change Cursor File…",
         "app.arrowFallbackDescription": "A dedicated cursor for this role was not found, so the theme's arrow cursor is being used instead.",
-        "app.role": "Role",
+        "app.automaticMatchKeywords": "Automatic Match Keywords",
+        "app.inheritedMatchKeywords": "Inherited Match Keywords",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Current Source",
         "app.automaticallyMatchedInsideSelectedFolder": "Automatically matched inside the selected folder",
@@ -148,8 +149,11 @@ enum Localized {
         "app.noFolderSelected": "No folder selected",
         "app.chooseFolder": "Choose Folder…",
         "app.cursorWillAppearHere": "The cursor will appear here after you load one.",
+        "preview.large": "Large Preview",
+        "preview.actualSize": "Actual Size",
         "export.authorLabel": "Author",
         "export.authorPlaceholder": "Enter the author name for Mousecape",
+        "export.sizeLabel": "Cursor Size",
         "export.emptyAuthorTitle": "Use your Mac account name?",
         "export.emptyAuthorMessage": "If you leave the author field empty, this cape will be exported with \"%@\" as the author.",
         "export.useMacUserName": "Use Mac Account Name",
@@ -172,6 +176,15 @@ enum Localized {
         "role.horizontalResize": "Horizontal Resize",
         "role.diagonalResizeNWSE": "Diagonal Resize 1",
         "role.diagonalResizeNESW": "Diagonal Resize 2",
+        "role.contextualMenu": "Contextual Menu",
+        "role.dragCopy": "Drag Copy",
+        "role.dragLink": "Drag Link",
+        "role.disappearingItem": "Disappearing Item",
+        "role.resizeUp": "Resize Up",
+        "role.resizeDown": "Resize Down",
+        "role.resizeLeft": "Resize Left",
+        "role.resizeRight": "Resize Right",
+        "role.verticalIBeam": "Vertical Text Selection",
         "status.startingUp": "Starting up...",
         "status.chooseCursorFolder": "Choose a cursor folder.",
         "status.supportedFiles": "Supported files are .ani and .cur.",
@@ -217,9 +230,12 @@ enum Localized {
         "app.openSettings": "설정 열기",
         "app.quit": "종료",
         "app.cursors": "커서",
+        "app.additionalCursors": "추가 커서",
+        "app.additionalCursorUses": "%@ 사용",
+        "app.additionalCursorHint": "보통은 이 항목들을 따로 바꿀 필요가 없습니다.\n자주 쓰이지 않는 macOS 커서 상태를 위한 항목이며, 기본적으로 가장 비슷한 기존 커서에 연결됩니다.",
         "app.noCursorLoaded": "불러온 커서가 없습니다",
         "app.loadCursorFolderHint": "커서 폴더를 불러온 뒤 왼쪽 목록에서 역할을 고르면 해당 커서를 표시합니다.",
-        "app.exportToMousecape": "Mousecape로 내보내기…",
+        "app.exportToMousecape": ".cape 파일로 내보내기…",
         "app.automaticMatchFailed": "자동 매핑 실패",
         "app.automaticMatchFailedArrowFallback": "자동 매핑 실패 · 일반 커서 대체",
         "app.manualOverride": "수동 지정",
@@ -227,7 +243,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "폴더에서 자동 매핑된 파일",
         "app.changeCursorFile": "커서 파일 변경…",
         "app.arrowFallbackDescription": "자동 매칭되는 전용 커서를 찾지 못해 이 테마의 일반 커서로 대체했습니다.",
-        "app.role": "역할",
+        "app.automaticMatchKeywords": "자동 매핑 키워드",
+        "app.inheritedMatchKeywords": "상속된 매핑 키워드",
         "app.mousecape": "Mousecape",
         "app.currentSource": "현재 소스",
         "app.automaticallyMatchedInsideSelectedFolder": "선택한 폴더 안에서 자동 매핑",
@@ -237,8 +254,11 @@ enum Localized {
         "app.noFolderSelected": "선택된 폴더 없음",
         "app.chooseFolder": "폴더 선택…",
         "app.cursorWillAppearHere": "커서를 불러오면 여기에 표시됩니다.",
+        "preview.large": "크게 보기",
+        "preview.actualSize": "실제 크기",
         "export.authorLabel": "제작자명",
         "export.authorPlaceholder": "Mousecape에 표시할 제작자명을 입력하세요",
+        "export.sizeLabel": "커서 크기",
         "export.emptyAuthorTitle": "맥 사용자 이름으로 내보낼까요?",
         "export.emptyAuthorMessage": "제작자명을 비워두면 이 cape는 \"%@\" 이름으로 내보내집니다.",
         "export.useMacUserName": "맥 사용자 이름 사용",
@@ -261,6 +281,15 @@ enum Localized {
         "role.horizontalResize": "수평 크기 조절",
         "role.diagonalResizeNWSE": "대각선 크기 조절 1",
         "role.diagonalResizeNESW": "대각선 크기 조절 2",
+        "role.contextualMenu": "컨텍스트 메뉴",
+        "role.dragCopy": "드래그 복사",
+        "role.dragLink": "드래그 링크",
+        "role.disappearingItem": "사라지는 항목",
+        "role.resizeUp": "위로 크기 조절",
+        "role.resizeDown": "아래로 크기 조절",
+        "role.resizeLeft": "왼쪽으로 크기 조절",
+        "role.resizeRight": "오른쪽으로 크기 조절",
+        "role.verticalIBeam": "세로 텍스트 선택",
         "status.startingUp": "초기화 중...",
         "status.chooseCursorFolder": "커서 폴더를 선택하세요.",
         "status.supportedFiles": "지원하는 파일은 .ani 또는 .cur 입니다.",
@@ -306,9 +335,12 @@ enum Localized {
         "app.openSettings": "設定を開く",
         "app.quit": "終了",
         "app.cursors": "カーソル",
+        "app.additionalCursors": "追加カーソル",
+        "app.additionalCursorUses": "%@ を使用",
+        "app.additionalCursorHint": "通常、これらを個別に変更する必要はありません。\nあまり使われない macOS のカーソル状態向けで、既定では最も似ている既存カーソルに割り当てられます。",
         "app.noCursorLoaded": "読み込まれたカーソルがありません",
         "app.loadCursorFolderHint": "カーソルフォルダを読み込んだあと、左の一覧から役割を選ぶとプレビューできます。",
-        "app.exportToMousecape": "Mousecape に書き出す…",
+        "app.exportToMousecape": ".cape ファイルとして書き出す…",
         "app.automaticMatchFailed": "自動マッチングに失敗しました",
         "app.automaticMatchFailedArrowFallback": "自動マッチング失敗・通常カーソルで代用",
         "app.manualOverride": "手動指定",
@@ -316,7 +348,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "フォルダから自動マッチングされたファイル",
         "app.changeCursorFile": "カーソルファイルを変更…",
         "app.arrowFallbackDescription": "この役割専用のカーソルが見つからなかったため、このテーマの通常カーソルで代用しています。",
-        "app.role": "役割",
+        "app.automaticMatchKeywords": "自動一致キーワード",
+        "app.inheritedMatchKeywords": "継承された一致キーワード",
         "app.mousecape": "Mousecape",
         "app.currentSource": "現在のソース",
         "app.automaticallyMatchedInsideSelectedFolder": "選択したフォルダ内で自動マッチング",
@@ -328,6 +361,7 @@ enum Localized {
         "app.cursorWillAppearHere": "カーソルを読み込むとここに表示されます。",
         "export.authorLabel": "作者名",
         "export.authorPlaceholder": "Mousecape に表示する作者名を入力してください",
+        "export.sizeLabel": "カーソルサイズ",
         "export.emptyAuthorTitle": "Mac のユーザー名で書き出しますか？",
         "export.emptyAuthorMessage": "作者名を空欄のままにすると、この cape は \"%@\" を作者名として書き出されます。",
         "export.useMacUserName": "Mac のユーザー名を使う",
@@ -350,6 +384,15 @@ enum Localized {
         "role.horizontalResize": "水平サイズ変更",
         "role.diagonalResizeNWSE": "斜めサイズ変更 1",
         "role.diagonalResizeNESW": "斜めサイズ変更 2",
+        "role.contextualMenu": "コンテキストメニュー",
+        "role.dragCopy": "ドラッグコピー",
+        "role.dragLink": "ドラッグリンク",
+        "role.disappearingItem": "消える項目",
+        "role.resizeUp": "上方向にサイズ変更",
+        "role.resizeDown": "下方向にサイズ変更",
+        "role.resizeLeft": "左方向にサイズ変更",
+        "role.resizeRight": "右方向にサイズ変更",
+        "role.verticalIBeam": "縦書きテキスト選択",
         "status.startingUp": "初期化中...",
         "status.chooseCursorFolder": "カーソルフォルダを選択してください。",
         "status.supportedFiles": "対応ファイルは .ani と .cur です。",
@@ -395,9 +438,12 @@ enum Localized {
         "app.openSettings": "打开设置",
         "app.quit": "退出",
         "app.cursors": "光标",
+        "app.additionalCursors": "附加光标",
+        "app.additionalCursorUses": "使用 %@",
+        "app.additionalCursorHint": "通常不需要单独修改这些项目。\n这些项目用于不常使用的 macOS 光标状态，默认会映射到最相似的现有光标。",
         "app.noCursorLoaded": "没有已加载的光标",
         "app.loadCursorFolderHint": "加载光标文件夹后，可在左侧列表中选择角色进行预览。",
-        "app.exportToMousecape": "导出到 Mousecape…",
+        "app.exportToMousecape": "导出为 .cape 文件…",
         "app.automaticMatchFailed": "自动匹配失败",
         "app.automaticMatchFailedArrowFallback": "自动匹配失败 · 使用普通光标替代",
         "app.manualOverride": "手动指定",
@@ -405,7 +451,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "从文件夹自动匹配的文件",
         "app.changeCursorFile": "更改光标文件…",
         "app.arrowFallbackDescription": "未找到此角色专用的光标，因此改用该主题的普通光标。",
-        "app.role": "角色",
+        "app.automaticMatchKeywords": "自动匹配关键词",
+        "app.inheritedMatchKeywords": "继承的匹配关键词",
         "app.mousecape": "Mousecape",
         "app.currentSource": "当前来源",
         "app.automaticallyMatchedInsideSelectedFolder": "在所选文件夹内自动匹配",
@@ -417,6 +464,7 @@ enum Localized {
         "app.cursorWillAppearHere": "加载光标后会显示在这里。",
         "export.authorLabel": "作者名",
         "export.authorPlaceholder": "请输入要在 Mousecape 中显示的作者名",
+        "export.sizeLabel": "光标大小",
         "export.emptyAuthorTitle": "要使用 Mac 用户名导出吗？",
         "export.emptyAuthorMessage": "如果作者名留空，此 cape 将以“%@”作为作者名导出。",
         "export.useMacUserName": "使用 Mac 用户名",
@@ -439,6 +487,15 @@ enum Localized {
         "role.horizontalResize": "水平调整大小",
         "role.diagonalResizeNWSE": "对角线调整大小 1",
         "role.diagonalResizeNESW": "对角线调整大小 2",
+        "role.contextualMenu": "上下文菜单",
+        "role.dragCopy": "拖拷贝",
+        "role.dragLink": "拖拽链接",
+        "role.disappearingItem": "消失项目",
+        "role.resizeUp": "向上调整大小",
+        "role.resizeDown": "向下调整大小",
+        "role.resizeLeft": "向左调整大小",
+        "role.resizeRight": "向右调整大小",
+        "role.verticalIBeam": "纵向文本选择",
         "status.startingUp": "正在初始化...",
         "status.chooseCursorFolder": "请选择光标文件夹。",
         "status.supportedFiles": "支持的文件格式为 .ani 和 .cur。",
@@ -484,9 +541,12 @@ enum Localized {
         "app.openSettings": "打開設定",
         "app.quit": "結束",
         "app.cursors": "游標",
+        "app.additionalCursors": "附加游標",
+        "app.additionalCursorUses": "使用 %@",
+        "app.additionalCursorHint": "通常不需要另外修改這些項目。\n這些項目用於不常使用的 macOS 游標狀態，預設會對應到最相似的既有游標。",
         "app.noCursorLoaded": "沒有已載入的游標",
         "app.loadCursorFolderHint": "載入游標資料夾後，可在左側列表中選擇角色進行預覽。",
-        "app.exportToMousecape": "匯出到 Mousecape…",
+        "app.exportToMousecape": "匯出為 .cape 檔案…",
         "app.automaticMatchFailed": "自動配對失敗",
         "app.automaticMatchFailedArrowFallback": "自動配對失敗 · 使用一般游標替代",
         "app.manualOverride": "手動指定",
@@ -494,7 +554,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "從資料夾自動配對的檔案",
         "app.changeCursorFile": "變更游標檔案…",
         "app.arrowFallbackDescription": "找不到此角色專用的游標，因此改用此主題的一般游標。",
-        "app.role": "角色",
+        "app.automaticMatchKeywords": "自動匹配關鍵字",
+        "app.inheritedMatchKeywords": "繼承的匹配關鍵字",
         "app.mousecape": "Mousecape",
         "app.currentSource": "目前來源",
         "app.automaticallyMatchedInsideSelectedFolder": "在所選資料夾中自動配對",
@@ -506,6 +567,7 @@ enum Localized {
         "app.cursorWillAppearHere": "載入游標後會顯示在這裡。",
         "export.authorLabel": "作者名",
         "export.authorPlaceholder": "請輸入要在 Mousecape 中顯示的作者名",
+        "export.sizeLabel": "游標大小",
         "export.emptyAuthorTitle": "要使用 Mac 使用者名稱匯出嗎？",
         "export.emptyAuthorMessage": "若作者名留空，此 cape 將以「%@」作為作者名匯出。",
         "export.useMacUserName": "使用 Mac 使用者名稱",
@@ -528,6 +590,15 @@ enum Localized {
         "role.horizontalResize": "水平調整大小",
         "role.diagonalResizeNWSE": "對角線調整大小 1",
         "role.diagonalResizeNESW": "對角線調整大小 2",
+        "role.contextualMenu": "情境選單",
+        "role.dragCopy": "拖曳複製",
+        "role.dragLink": "拖曳連結",
+        "role.disappearingItem": "消失項目",
+        "role.resizeUp": "向上調整大小",
+        "role.resizeDown": "向下調整大小",
+        "role.resizeLeft": "向左調整大小",
+        "role.resizeRight": "向右調整大小",
+        "role.verticalIBeam": "垂直文字選取",
         "status.startingUp": "初始化中...",
         "status.chooseCursorFolder": "請選擇游標資料夾。",
         "status.supportedFiles": "支援的檔案格式為 .ani 與 .cur。",
@@ -573,9 +644,12 @@ enum Localized {
         "app.openSettings": "Einstellungen öffnen",
         "app.quit": "Beenden",
         "app.cursors": "Cursor",
+        "app.additionalCursors": "Zusätzliche Cursor",
+        "app.additionalCursorUses": "Verwendet %@",
+        "app.additionalCursorHint": "Normalerweise müssen Sie diese nicht ändern.\nSie decken macOS-Cursorzustände ab, die nicht oft verwendet werden, und werden standardmäßig dem ähnlichsten vorhandenen Cursor zugeordnet.",
         "app.noCursorLoaded": "Kein Cursor geladen",
         "app.loadCursorFolderHint": "Laden Sie einen Cursor-Ordner und wählen Sie dann links eine Rolle zur Vorschau aus.",
-        "app.exportToMousecape": "Nach Mousecape exportieren…",
+        "app.exportToMousecape": "Als .cape-Datei exportieren…",
         "app.automaticMatchFailed": "Automatische Zuordnung fehlgeschlagen",
         "app.automaticMatchFailedArrowFallback": "Automatische Zuordnung fehlgeschlagen · Standardcursor als Ersatz",
         "app.manualOverride": "Manuelle Zuweisung",
@@ -583,7 +657,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "Automatisch aus dem Ordner zugeordnet",
         "app.changeCursorFile": "Cursor-Datei ändern…",
         "app.arrowFallbackDescription": "Für diese Rolle wurde kein eigener Cursor gefunden, daher wird stattdessen der Standardcursor des Themes verwendet.",
-        "app.role": "Rolle",
+        "app.automaticMatchKeywords": "Schlüsselwörter für automatische Zuordnung",
+        "app.inheritedMatchKeywords": "Übernommene Zuordnungsschlüsselwörter",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Aktuelle Quelle",
         "app.automaticallyMatchedInsideSelectedFolder": "Im ausgewählten Ordner automatisch zugeordnet",
@@ -595,6 +670,7 @@ enum Localized {
         "app.cursorWillAppearHere": "Der Cursor wird hier angezeigt, sobald Sie einen laden.",
         "export.authorLabel": "Autor",
         "export.authorPlaceholder": "Autorname für Mousecape eingeben",
+        "export.sizeLabel": "Cursorgröße",
         "export.emptyAuthorTitle": "Mac-Benutzernamen verwenden?",
         "export.emptyAuthorMessage": "Wenn Sie das Autorenfeld leer lassen, wird dieses Cape mit \"%@\" als Autor exportiert.",
         "export.useMacUserName": "Mac-Benutzernamen verwenden",
@@ -617,6 +693,15 @@ enum Localized {
         "role.horizontalResize": "Horizontal skalieren",
         "role.diagonalResizeNWSE": "Diagonale Größenänderung 1",
         "role.diagonalResizeNESW": "Diagonale Größenänderung 2",
+        "role.contextualMenu": "Kontextmenü",
+        "role.dragCopy": "Ziehen zum Kopieren",
+        "role.dragLink": "Ziehen zum Verknüpfen",
+        "role.disappearingItem": "Verschwindendes Element",
+        "role.resizeUp": "Nach oben vergrößern",
+        "role.resizeDown": "Nach unten vergrößern",
+        "role.resizeLeft": "Nach links vergrößern",
+        "role.resizeRight": "Nach rechts vergrößern",
+        "role.verticalIBeam": "Vertikale Textauswahl",
         "status.startingUp": "Initialisierung...",
         "status.chooseCursorFolder": "Wählen Sie einen Cursor-Ordner.",
         "status.supportedFiles": "Unterstützte Dateien sind .ani und .cur.",
@@ -657,14 +742,17 @@ enum Localized {
 
     private static let french: [String: String] = [
         "app.chooseCursorFolder": "Choisissez un dossier de curseurs",
-        "app.rolesReady": "%d roles prêtes",
+        "app.rolesReady": "%d rôles prêts",
         "app.folderRequired": "Dossier requis",
         "app.openSettings": "Ouvrir les réglages",
         "app.quit": "Quitter",
         "app.cursors": "Curseurs",
+        "app.additionalCursors": "Curseurs supplémentaires",
+        "app.additionalCursorUses": "Utilise %@",
+        "app.additionalCursorHint": "Vous n'aurez généralement pas besoin de modifier ces éléments.\nIls couvrent des états de curseur macOS peu utilisés et sont associés par défaut au curseur existant le plus similaire.",
         "app.noCursorLoaded": "Aucun curseur chargé",
         "app.loadCursorFolderHint": "Chargez un dossier de curseurs, puis choisissez un role dans la liste à gauche pour l’aperçu.",
-        "app.exportToMousecape": "Exporter vers Mousecape…",
+        "app.exportToMousecape": "Exporter en fichier .cape…",
         "app.automaticMatchFailed": "Échec de la correspondance automatique",
         "app.automaticMatchFailedArrowFallback": "Échec de la correspondance automatique · curseur normal utilisé",
         "app.manualOverride": "Remplacement manuel",
@@ -672,7 +760,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "Fichier associé automatiquement depuis le dossier",
         "app.changeCursorFile": "Changer le fichier du curseur…",
         "app.arrowFallbackDescription": "Aucun curseur dédié n’a été trouvé pour ce role. Le curseur normal du thème est utilisé à la place.",
-        "app.role": "Role",
+        "app.automaticMatchKeywords": "Mots-clés de correspondance automatique",
+        "app.inheritedMatchKeywords": "Mots-clés de correspondance hérités",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Source actuelle",
         "app.automaticallyMatchedInsideSelectedFolder": "Correspondance automatique dans le dossier sélectionné",
@@ -684,6 +773,7 @@ enum Localized {
         "app.cursorWillAppearHere": "Le curseur apparaîtra ici après chargement.",
         "export.authorLabel": "Auteur",
         "export.authorPlaceholder": "Saisissez le nom d’auteur pour Mousecape",
+        "export.sizeLabel": "Taille du curseur",
         "export.emptyAuthorTitle": "Utiliser le nom d’utilisateur du Mac ?",
         "export.emptyAuthorMessage": "Si vous laissez le champ auteur vide, ce cape sera exporté avec \"%@\" comme auteur.",
         "export.useMacUserName": "Utiliser le nom d’utilisateur du Mac",
@@ -706,12 +796,21 @@ enum Localized {
         "role.horizontalResize": "Redimensionnement horizontal",
         "role.diagonalResizeNWSE": "Redimensionnement diagonal 1",
         "role.diagonalResizeNESW": "Redimensionnement diagonal 2",
+        "role.contextualMenu": "Menu contextuel",
+        "role.dragCopy": "Glisser pour copier",
+        "role.dragLink": "Glisser pour lier",
+        "role.disappearingItem": "Élément disparaissant",
+        "role.resizeUp": "Redimensionner vers le haut",
+        "role.resizeDown": "Redimensionner vers le bas",
+        "role.resizeLeft": "Redimensionner vers la gauche",
+        "role.resizeRight": "Redimensionner vers la droite",
+        "role.verticalIBeam": "Sélection de texte verticale",
         "status.startingUp": "Initialisation...",
         "status.chooseCursorFolder": "Choisissez un dossier de curseurs.",
         "status.supportedFiles": "Les fichiers pris en charge sont .ani et .cur.",
         "status.exportSuccess": "Cape Mousecape exporté : %@",
         "status.exportFailure": "Échec de l’export du cape : %@",
-        "status.loaded": "%@ chargé · %d/%d roles associées",
+        "status.loaded": "%@ chargé · %d/%d rôles associés",
         "status.loadFailure": "Échec du chargement : %@",
         "panel.chooseFolder": "Choisir un dossier",
         "panel.chooseCursor": "Choisir un curseur",
@@ -746,14 +845,17 @@ enum Localized {
 
     private static let spanish: [String: String] = [
         "app.chooseCursorFolder": "Elige una carpeta de cursores",
-        "app.rolesReady": "%d roles listas",
+        "app.rolesReady": "%d roles listos",
         "app.folderRequired": "Se requiere una carpeta",
         "app.openSettings": "Abrir ajustes",
         "app.quit": "Salir",
         "app.cursors": "Cursores",
+        "app.additionalCursors": "Cursores adicionales",
+        "app.additionalCursorUses": "Usa %@",
+        "app.additionalCursorHint": "Normalmente no necesitarás cambiar estos elementos.\nCubren estados de cursor de macOS que no se usan con frecuencia y, por defecto, se asignan al cursor existente más similar.",
         "app.noCursorLoaded": "No hay cursores cargados",
         "app.loadCursorFolderHint": "Carga una carpeta de cursores y luego elige un rol en la lista de la izquierda para ver la vista previa.",
-        "app.exportToMousecape": "Exportar a Mousecape…",
+        "app.exportToMousecape": "Exportar como archivo .cape…",
         "app.automaticMatchFailed": "Falló la coincidencia automática",
         "app.automaticMatchFailedArrowFallback": "Falló la coincidencia automática · usando cursor normal",
         "app.manualOverride": "Asignación manual",
@@ -761,7 +863,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "Archivo asignado automáticamente desde la carpeta",
         "app.changeCursorFile": "Cambiar archivo de cursor…",
         "app.arrowFallbackDescription": "No se encontró un cursor dedicado para este rol, así que se usa el cursor normal del tema.",
-        "app.role": "Rol",
+        "app.automaticMatchKeywords": "Palabras clave de coincidencia automática",
+        "app.inheritedMatchKeywords": "Palabras clave de coincidencia heredadas",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Origen actual",
         "app.automaticallyMatchedInsideSelectedFolder": "Coincidencia automática dentro de la carpeta seleccionada",
@@ -773,6 +876,7 @@ enum Localized {
         "app.cursorWillAppearHere": "El cursor aparecerá aquí después de cargarlo.",
         "export.authorLabel": "Autor",
         "export.authorPlaceholder": "Introduce el nombre del autor para Mousecape",
+        "export.sizeLabel": "Tamaño del cursor",
         "export.emptyAuthorTitle": "¿Usar el nombre de usuario de tu Mac?",
         "export.emptyAuthorMessage": "Si dejas vacío el campo del autor, este cape se exportará con \"%@\" como autor.",
         "export.useMacUserName": "Usar nombre de usuario del Mac",
@@ -795,12 +899,21 @@ enum Localized {
         "role.horizontalResize": "Redimensionado horizontal",
         "role.diagonalResizeNWSE": "Redimensionado diagonal 1",
         "role.diagonalResizeNESW": "Redimensionado diagonal 2",
+        "role.contextualMenu": "Menú contextual",
+        "role.dragCopy": "Arrastrar para copiar",
+        "role.dragLink": "Arrastrar para enlazar",
+        "role.disappearingItem": "Elemento que desaparece",
+        "role.resizeUp": "Redimensionar hacia arriba",
+        "role.resizeDown": "Redimensionar hacia abajo",
+        "role.resizeLeft": "Redimensionar hacia la izquierda",
+        "role.resizeRight": "Redimensionar hacia la derecha",
+        "role.verticalIBeam": "Selección de texto vertical",
         "status.startingUp": "Iniciando...",
         "status.chooseCursorFolder": "Elige una carpeta de cursores.",
         "status.supportedFiles": "Los archivos compatibles son .ani y .cur.",
         "status.exportSuccess": "Cape de Mousecape exportado: %@",
         "status.exportFailure": "Error al exportar el cape: %@",
-        "status.loaded": "%@ cargado · %d/%d roles asignadas",
+        "status.loaded": "%@ cargado · %d/%d roles asignados",
         "status.loadFailure": "Error al cargar: %@",
         "panel.chooseFolder": "Elegir carpeta",
         "panel.chooseCursor": "Elegir cursor",
@@ -840,9 +953,12 @@ enum Localized {
         "app.openSettings": "Abrir Ajustes",
         "app.quit": "Sair",
         "app.cursors": "Cursores",
+        "app.additionalCursors": "Cursores adicionais",
+        "app.additionalCursorUses": "Usa %@",
+        "app.additionalCursorHint": "Normalmente você não precisará alterar estes itens.\nEles cobrem estados de cursor do macOS que não são usados com frequência e, por padrão, são mapeados para o cursor existente mais semelhante.",
         "app.noCursorLoaded": "Nenhum cursor carregado",
         "app.loadCursorFolderHint": "Carregue uma pasta de cursores e depois escolha uma função na lista à esquerda para visualizar.",
-        "app.exportToMousecape": "Exportar para o Mousecape…",
+        "app.exportToMousecape": "Exportar como arquivo .cape…",
         "app.automaticMatchFailed": "Falha na correspondência automática",
         "app.automaticMatchFailedArrowFallback": "Falha na correspondência automática · usando o cursor padrão",
         "app.manualOverride": "Substituição manual",
@@ -850,7 +966,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "Arquivo associado automaticamente da pasta",
         "app.changeCursorFile": "Alterar arquivo do cursor…",
         "app.arrowFallbackDescription": "Não foi encontrado um cursor dedicado para esta função, então o cursor padrão do tema está sendo usado no lugar.",
-        "app.role": "Função",
+        "app.automaticMatchKeywords": "Palavras-chave de correspondência automática",
+        "app.inheritedMatchKeywords": "Palavras-chave de correspondência herdadas",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Fonte atual",
         "app.automaticallyMatchedInsideSelectedFolder": "Correspondência automática dentro da pasta selecionada",
@@ -862,6 +979,7 @@ enum Localized {
         "app.cursorWillAppearHere": "O cursor aparecerá aqui depois que você carregar um.",
         "export.authorLabel": "Autor",
         "export.authorPlaceholder": "Digite o nome do autor para o Mousecape",
+        "export.sizeLabel": "Tamanho do cursor",
         "export.emptyAuthorTitle": "Usar o nome de usuário do Mac?",
         "export.emptyAuthorMessage": "Se você deixar o campo de autor vazio, este cape será exportado com \"%@\" como autor.",
         "export.useMacUserName": "Usar nome de usuário do Mac",
@@ -884,6 +1002,15 @@ enum Localized {
         "role.horizontalResize": "Redimensionamento horizontal",
         "role.diagonalResizeNWSE": "Redimensionamento diagonal 1",
         "role.diagonalResizeNESW": "Redimensionamento diagonal 2",
+        "role.contextualMenu": "Menu contextual",
+        "role.dragCopy": "Arrastar para copiar",
+        "role.dragLink": "Arrastar para link",
+        "role.disappearingItem": "Item desaparecendo",
+        "role.resizeUp": "Redimensionar para cima",
+        "role.resizeDown": "Redimensionar para baixo",
+        "role.resizeLeft": "Redimensionar para a esquerda",
+        "role.resizeRight": "Redimensionar para a direita",
+        "role.verticalIBeam": "Seleção vertical de texto",
         "status.startingUp": "Iniciando...",
         "status.chooseCursorFolder": "Escolha uma pasta de cursores.",
         "status.supportedFiles": "Os arquivos compatíveis são .ani e .cur.",
@@ -929,9 +1056,12 @@ enum Localized {
         "app.openSettings": "Apri Impostazioni",
         "app.quit": "Esci",
         "app.cursors": "Cursori",
+        "app.additionalCursors": "Cursori aggiuntivi",
+        "app.additionalCursorUses": "Usa %@",
+        "app.additionalCursorHint": "Di solito non è necessario modificare questi elementi.\nCoprono stati del cursore macOS che non vengono usati spesso e, per impostazione predefinita, vengono associati al cursore esistente più simile.",
         "app.noCursorLoaded": "Nessun cursore caricato",
         "app.loadCursorFolderHint": "Carica una cartella di cursori, poi scegli un ruolo nell’elenco a sinistra per l’anteprima.",
-        "app.exportToMousecape": "Esporta in Mousecape…",
+        "app.exportToMousecape": "Esporta come file .cape…",
         "app.automaticMatchFailed": "Associazione automatica non riuscita",
         "app.automaticMatchFailedArrowFallback": "Associazione automatica non riuscita · uso del cursore standard",
         "app.manualOverride": "Sostituzione manuale",
@@ -939,7 +1069,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "File associato automaticamente dalla cartella",
         "app.changeCursorFile": "Cambia file cursore…",
         "app.arrowFallbackDescription": "Non è stato trovato un cursore dedicato per questo ruolo, quindi viene usato il cursore standard del tema.",
-        "app.role": "Ruolo",
+        "app.automaticMatchKeywords": "Parole chiave per l'abbinamento automatico",
+        "app.inheritedMatchKeywords": "Parole chiave di abbinamento ereditate",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Sorgente attuale",
         "app.automaticallyMatchedInsideSelectedFolder": "Associazione automatica nella cartella selezionata",
@@ -951,6 +1082,7 @@ enum Localized {
         "app.cursorWillAppearHere": "Il cursore apparirà qui dopo il caricamento.",
         "export.authorLabel": "Autore",
         "export.authorPlaceholder": "Inserisci il nome autore per Mousecape",
+        "export.sizeLabel": "Dimensione del cursore",
         "export.emptyAuthorTitle": "Usare il nome utente del Mac?",
         "export.emptyAuthorMessage": "Se lasci vuoto il campo autore, questo cape verrà esportato con \"%@\" come autore.",
         "export.useMacUserName": "Usa nome utente del Mac",
@@ -973,6 +1105,15 @@ enum Localized {
         "role.horizontalResize": "Ridimensionamento orizzontale",
         "role.diagonalResizeNWSE": "Ridimensionamento diagonale 1",
         "role.diagonalResizeNESW": "Ridimensionamento diagonale 2",
+        "role.contextualMenu": "Menu contestuale",
+        "role.dragCopy": "Trascina per copiare",
+        "role.dragLink": "Trascina per collegare",
+        "role.disappearingItem": "Elemento che scompare",
+        "role.resizeUp": "Ridimensiona verso l'alto",
+        "role.resizeDown": "Ridimensiona verso il basso",
+        "role.resizeLeft": "Ridimensiona verso sinistra",
+        "role.resizeRight": "Ridimensiona verso destra",
+        "role.verticalIBeam": "Selezione testo verticale",
         "status.startingUp": "Avvio in corso...",
         "status.chooseCursorFolder": "Scegli una cartella di cursori.",
         "status.supportedFiles": "I file supportati sono .ani e .cur.",
@@ -1018,9 +1159,12 @@ enum Localized {
         "app.openSettings": "Открыть настройки",
         "app.quit": "Выйти",
         "app.cursors": "Курсоры",
+        "app.additionalCursors": "Дополнительные курсоры",
+        "app.additionalCursorUses": "Использует %@",
+        "app.additionalCursorHint": "Обычно вам не нужно менять эти элементы.\nОни охватывают редко используемые состояния курсора macOS и по умолчанию сопоставляются с наиболее похожим существующим курсором.",
         "app.noCursorLoaded": "Нет загруженных курсоров",
         "app.loadCursorFolderHint": "Загрузите папку с курсорами, затем выберите роль в списке слева для предпросмотра.",
-        "app.exportToMousecape": "Экспортировать в Mousecape…",
+        "app.exportToMousecape": "Экспортировать как файл .cape…",
         "app.automaticMatchFailed": "Автосопоставление не удалось",
         "app.automaticMatchFailedArrowFallback": "Автосопоставление не удалось · используется обычный курсор",
         "app.manualOverride": "Ручное назначение",
@@ -1028,7 +1172,8 @@ enum Localized {
         "app.automaticallyMatchedFromFolder": "Файл автоматически сопоставлен из папки",
         "app.changeCursorFile": "Изменить файл курсора…",
         "app.arrowFallbackDescription": "Для этой роли не найден отдельный курсор, поэтому используется обычный курсор темы.",
-        "app.role": "Роль",
+        "app.automaticMatchKeywords": "Ключевые слова автосопоставления",
+        "app.inheritedMatchKeywords": "Унаследованные ключевые слова сопоставления",
         "app.mousecape": "Mousecape",
         "app.currentSource": "Текущий источник",
         "app.automaticallyMatchedInsideSelectedFolder": "Автосопоставление внутри выбранной папки",
@@ -1040,6 +1185,7 @@ enum Localized {
         "app.cursorWillAppearHere": "Курсор появится здесь после загрузки.",
         "export.authorLabel": "Автор",
         "export.authorPlaceholder": "Введите имя автора для Mousecape",
+        "export.sizeLabel": "Размер курсора",
         "export.emptyAuthorTitle": "Использовать имя пользователя Mac?",
         "export.emptyAuthorMessage": "Если оставить поле автора пустым, этот cape будет экспортирован с именем автора \"%@\".",
         "export.useMacUserName": "Использовать имя пользователя Mac",
@@ -1062,6 +1208,15 @@ enum Localized {
         "role.horizontalResize": "Горизонтальное изменение размера",
         "role.diagonalResizeNWSE": "Диагональное изменение размера 1",
         "role.diagonalResizeNESW": "Диагональное изменение размера 2",
+        "role.contextualMenu": "Контекстное меню",
+        "role.dragCopy": "Перетаскивание для копирования",
+        "role.dragLink": "Перетаскивание для ссылки",
+        "role.disappearingItem": "Исчезающий элемент",
+        "role.resizeUp": "Изменение размера вверх",
+        "role.resizeDown": "Изменение размера вниз",
+        "role.resizeLeft": "Изменение размера влево",
+        "role.resizeRight": "Изменение размера вправо",
+        "role.verticalIBeam": "Вертикальное выделение текста",
         "status.startingUp": "Запуск...",
         "status.chooseCursorFolder": "Выберите папку с курсорами.",
         "status.supportedFiles": "Поддерживаются файлы .ani и .cur.",

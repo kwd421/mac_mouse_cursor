@@ -1,0 +1,304 @@
+# french
+
+[app.chooseCursorFolder]
+Choisissez un dossier de curseurs
+
+[app.rolesReady]
+%d roles prêtes
+
+[app.folderRequired]
+Dossier requis
+
+[app.openSettings]
+Ouvrir les réglages
+
+[app.quit]
+Quitter
+
+[app.cursors]
+Curseurs
+
+[app.additionalCursors]
+Curseurs supplémentaires
+
+[app.additionalCursorUses]
+Utilise %@
+
+[app.additionalCursorHint]
+Vous n'aurez généralement pas besoin de modifier ces éléments.
+Ils couvrent des états de curseur macOS peu utilisés et sont associés par défaut au curseur existant le plus similaire.
+
+[app.noCursorLoaded]
+Aucun curseur chargé
+
+[app.loadCursorFolderHint]
+Chargez un dossier de curseurs, puis choisissez un role dans la liste à gauche pour l’aperçu.
+
+[app.exportToMousecape]
+Exporter en fichier .cape…
+
+[app.automaticMatchFailed]
+Échec de la correspondance automatique
+
+[app.automaticMatchFailedArrowFallback]
+Échec de la correspondance automatique · curseur normal utilisé
+
+[app.manualOverride]
+Remplacement manuel
+
+[app.automaticallyMatched]
+Correspondance automatique
+
+[app.automaticallyMatchedFromFolder]
+Fichier associé automatiquement depuis le dossier
+
+[app.changeCursorFile]
+Changer le fichier du curseur…
+
+[app.arrowFallbackDescription]
+Aucun curseur dédié n’a été trouvé pour ce role. Le curseur normal du thème est utilisé à la place.
+
+[app.automaticMatchKeywords]
+Mots-clés de correspondance automatique
+
+[app.inheritedMatchKeywords]
+Mots-clés de correspondance hérités
+
+[app.mousecape]
+Mousecape
+
+[app.currentSource]
+Source actuelle
+
+[app.automaticallyMatchedInsideSelectedFolder]
+Correspondance automatique dans le dossier sélectionné
+
+[app.status]
+État
+
+[app.automaticMatchFailedArrowFallbackShort]
+Correspondance automatique échouée (curseur normal utilisé)
+
+[app.cursorFolder]
+Dossier de curseurs
+
+[app.noFolderSelected]
+Aucun dossier sélectionné
+
+[app.chooseFolder]
+Choisir un dossier…
+
+[app.cursorWillAppearHere]
+Le curseur apparaîtra ici après chargement.
+
+[export.authorLabel]
+Auteur
+
+[export.authorPlaceholder]
+Saisissez le nom d’auteur pour Mousecape
+
+[export.sizeLabel]
+Taille du curseur
+
+[export.emptyAuthorTitle]
+Utiliser le nom d’utilisateur du Mac ?
+
+[export.emptyAuthorMessage]
+Si vous laissez le champ auteur vide, ce cape sera exporté avec "%@" comme auteur.
+
+[export.useMacUserName]
+Utiliser le nom d’utilisateur du Mac
+
+[export.cancel]
+Annuler
+
+[export.unknownAuthor]
+Inconnu
+
+[role.arrow]
+Sélection normale
+
+[role.text]
+Sélection de texte
+
+[role.link]
+Sélection de lien
+
+[role.location]
+Glisser
+
+[role.precision]
+Sélection précise
+
+[role.move]
+Déplacer
+
+[role.unavailable]
+Indisponible
+
+[role.busy]
+Occupé
+
+[role.working]
+Attente
+
+[role.help]
+Aide
+
+[role.handwriting]
+Écriture manuscrite
+
+[role.person]
+Sélection de cellule
+
+[role.alternate]
+Alias
+
+[role.verticalResize]
+Redimensionnement vertical
+
+[role.horizontalResize]
+Redimensionnement horizontal
+
+[role.diagonalResizeNWSE]
+Redimensionnement diagonal 1
+
+[role.diagonalResizeNESW]
+Redimensionnement diagonal 2
+
+[role.contextualMenu]
+Menu contextuel
+
+[role.dragCopy]
+Glisser pour copier
+
+[role.dragLink]
+Glisser pour lier
+
+[role.disappearingItem]
+Élément disparaissant
+
+[role.resizeUp]
+Redimensionner vers le haut
+
+[role.resizeDown]
+Redimensionner vers le bas
+
+[role.resizeLeft]
+Redimensionner vers la gauche
+
+[role.resizeRight]
+Redimensionner vers la droite
+
+[role.verticalIBeam]
+Sélection de texte verticale
+
+[status.startingUp]
+Initialisation...
+
+[status.chooseCursorFolder]
+Choisissez un dossier de curseurs.
+
+[status.supportedFiles]
+Les fichiers pris en charge sont .ani et .cur.
+
+[status.exportSuccess]
+Cape Mousecape exporté : %@
+
+[status.exportFailure]
+Échec de l’export du cape : %@
+
+[status.loaded]
+%@ chargé · %d/%d roles associées
+
+[status.loadFailure]
+Échec du chargement : %@
+
+[panel.chooseFolder]
+Choisir un dossier
+
+[panel.chooseCursor]
+Choisir un curseur
+
+[panel.export]
+Exporter
+
+[menu.language]
+Langue
+
+[menu.language.korean]
+한국어
+
+[menu.language.english]
+English
+
+[menu.language.japanese]
+日本語
+
+[menu.language.simplifiedChinese]
+简体中文
+
+[menu.language.traditionalChinese]
+繁體中文
+
+[menu.language.german]
+Deutsch
+
+[menu.language.french]
+Français
+
+[menu.language.spanish]
+Español
+
+[menu.language.portugueseBrazil]
+Português (Brasil)
+
+[menu.language.italian]
+Italiano
+
+[menu.language.russian]
+Русский
+
+[error.noThemeFolderSelected]
+Aucun dossier de thème sélectionné.
+
+[error.themeFileMissing]
+Fichier de thème introuvable : %@
+
+[error.aniParsingFailed]
+Échec de l’analyse ANI : %@
+
+[error.unsupportedCursorPayload]
+Impossible de lire l’image du frame du curseur.
+
+[error.invalidThemeSelection.noCursorFiles]
+Ce dossier ne contient pas de fichiers de curseur directement utilisables.
+Choisissez un dossier contenant des fichiers .ani ou .cur à la racine.
+
+[error.unsupportedExtension]
+Extension non prise en charge : %@
+
+[error.invalidRiffAconHeader]
+Le fichier ne possède pas d’en-tête RIFF ACON valide.
+
+[error.invalidChunkLength]
+La longueur du bloc est invalide.
+
+[error.noFrames]
+Le fichier ne contient aucune frame.
+
+[error.invalidIconChunkLength]
+La longueur du bloc icon est invalide.
+
+[error.curTooShort]
+Les données CUR sont trop courtes.
+
+[error.invalidCurHeader]
+Le fichier ne contient pas d’en-tête CUR valide.
+
+[error.invalidCurEmbeddedRange]
+La plage de l’image CUR intégrée est invalide.
+
+[error.noCursorsToExport]
+Aucun curseur à exporter.
+
