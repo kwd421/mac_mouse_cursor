@@ -671,18 +671,21 @@ struct EmptyPreviewGroup<TrailingAction: View>: View {
                     trailingAction
                 }
 
-                VStack(spacing: LayoutMetrics.cardSpacing) {
-                    Image(systemName: "cursorarrow")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.tertiary)
-                    Text(Localized.string("app.cursorWillAppearHere"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                HStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: LayoutMetrics.itemSpacing) {
+                        Text(Localized.string("preview.large"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        EmptyPreviewPane()
+                    }
+
+                    VStack(alignment: .leading, spacing: LayoutMetrics.itemSpacing) {
+                        Text(Localized.string("preview.actualSize"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        EmptyPreviewPane()
+                    }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .frame(height: 220)
-                .background(Color(nsColor: .controlBackgroundColor))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .padding(.horizontal, LayoutMetrics.cardHorizontalPadding)
             .padding(.vertical, LayoutMetrics.cardVerticalPadding)
@@ -690,6 +693,27 @@ struct EmptyPreviewGroup<TrailingAction: View>: View {
             EmptyView()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct EmptyPreviewPane: View {
+    @ObservedObject private var localization = LocalizationController.shared
+
+    var body: some View {
+        let _ = localization.selectedLanguage
+        VStack(spacing: LayoutMetrics.cardSpacing) {
+            Image(systemName: "cursorarrow")
+                .font(.system(size: 28))
+                .foregroundStyle(.tertiary)
+            Text(Localized.string("app.cursorWillAppearHere"))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(height: 220)
+        .background(Color(nsColor: .controlBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

@@ -10,7 +10,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         controller.start()
         NSApp.setActivationPolicy(.regular)
-        openSettingsIfNeeded()
+        // Defer activation until the app has fully finished launching so the
+        // settings window reliably becomes key/frontmost in archived builds.
+        DispatchQueue.main.async { [weak self] in
+            self?.openSettingsIfNeeded()
+        }
     }
 
     func openSettingsWindow() {
