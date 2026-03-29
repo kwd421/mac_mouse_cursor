@@ -7,9 +7,28 @@ struct ResolvedTheme {
 
 struct ThemeResolver {
     static func displayKeywords(for role: CursorRole, language: AppLanguage = Localized.currentLanguage) -> String {
-        displayKeywords[language]?[role, default: []].joined(separator: ", ")
-            ?? displayKeywords[.english]?[role, default: []].joined(separator: ", ")
-            ?? orderedKeywords(for: role).joined(separator: ", ")
+        let englishKeywords = displayKeywords[.english]?[role, default: []] ?? []
+
+        if language == .english {
+            return englishKeywords.joined(separator: ", ")
+        }
+
+        let localizedKeywords = displayKeywords[language]?[role, default: []] ?? []
+
+        var seen = Set<String>()
+        var ordered: [String] = []
+
+        for keyword in englishKeywords + localizedKeywords {
+            let normalized = normalizedKeyword(keyword)
+            guard !normalized.isEmpty, seen.insert(normalized).inserted else { continue }
+            ordered.append(keyword)
+        }
+
+        if !ordered.isEmpty {
+            return ordered.joined(separator: ", ")
+        }
+
+        return orderedKeywords(for: role).joined(separator: ", ")
     }
 
     func resolveTheme(in directory: URL) throws -> ResolvedTheme {
@@ -147,7 +166,7 @@ struct ThemeResolver {
             .precision: ["정밀도", "십자선", "교차"],
             .move: ["이동", "드래그", "잡기"],
             .unavailable: ["사용 불가", "금지", "차단"],
-            .busy: ["사용 중", "바쁨"],
+            .busy: ["사용 중", "busy"],
             .working: ["백그라운드", "대기", "로딩"],
             .help: ["도움말", "물음표"],
             .handwriting: ["손글씨", "펜", "연필"],
@@ -162,20 +181,20 @@ struct ThemeResolver {
             .arrow: ["arrow", "normal", "pointer"],
             .text: ["text", "ibeam", "input"],
             .link: ["link", "pointing hand", "pointer hand"],
-            .location: ["drag", "copy", "location"],
+            .location: ["drag", "copy", "location", "loc"],
             .precision: ["precision", "crosshair"],
             .move: ["move", "drag", "grab"],
             .unavailable: ["unavailable", "forbidden", "blocked"],
             .busy: ["busy", "in use"],
-            .working: ["background", "wait", "loading"],
+            .working: ["background", "wait", "loading", "working"],
             .help: ["help", "question"],
             .handwriting: ["handwriting", "pen", "pencil"],
             .person: ["cell", "person"],
             .alternate: ["alias", "alternate"],
-            .verticalResize: ["vertical", "up/down"],
-            .horizontalResize: ["horizontal", "left/right"],
-            .diagonalResizeNWSE: ["diagonal 1", "nwse"],
-            .diagonalResizeNESW: ["diagonal 2", "nesw"]
+            .verticalResize: ["vertical", "up/down", "vert"],
+            .horizontalResize: ["horizontal", "left/right", "horz"],
+            .diagonalResizeNWSE: ["diagonal 1", "nwse", "dgn1"],
+            .diagonalResizeNESW: ["diagonal 2", "nesw", "dgn2"]
         ],
         .japanese: [
             .arrow: ["通常", "基本", "矢印"],

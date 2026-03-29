@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 private enum LayoutMetrics {
     static let detailOuterPadding: CGFloat = 24
@@ -73,14 +74,19 @@ struct SettingsView: View {
                         if let assignment = controller.assignment(for: role) {
                             CursorRoleRow(assignment: assignment)
                                 .tag(SidebarCursorItem.primary(role))
+                                .onTapGesture {
+                                    selection = .primary(role)
+                                }
                         }
                     }
 
                     Section {
                         Button {
                             isSupplementalExpanded.toggle()
-                            if !isSupplementalExpanded, case .supplemental = selection {
-                                selection = .primary(.arrow)
+                            if !isSupplementalExpanded {
+                                if case .supplemental = selection {
+                                    selection = .primary(.arrow)
+                                }
                             }
                         } label: {
                             AdditionalCursorsHeader(isExpanded: isSupplementalExpanded)
@@ -91,6 +97,9 @@ struct SettingsView: View {
                             ForEach(SupplementalCursorRole.allCases) { role in
                                 SupplementalCursorRoleRow(assignment: controller.supplementalAssignment(for: role))
                                     .tag(SidebarCursorItem.supplemental(role))
+                                    .onTapGesture {
+                                        selection = .supplemental(role)
+                                    }
                             }
                         }
                     }
@@ -124,7 +133,48 @@ struct SettingsView: View {
                 dismissButton: .default(Text(Localized.string("alert.ok")))
             )
         }
+        .onDrop(of: [UTType.fileURL], isTargeted: nil) { providers in
+            handleDrop(providers: providers)
+        }
     }
+
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        guard provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) else { return false }
+        let dropSelection = selection
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+            guard let url = droppedFileURL(from: item) else {
+                Task { @MainActor in
+                    controller.activeAlert = UserFacingAlert(
+                        title: Localized.string("alert.errorTitle"),
+                        message: Localized.string("alert.dropLoadFailed")
+                    )
+                }
+                return
+            }
+            Task { @MainActor in
+                _ = controller.handleDroppedItem(at: url, selection: dropSelection)
+            }
+        }
+        return true
+    }
+}
+
+private func droppedFileURL(from item: NSSecureCoding?) -> URL? {
+    if let data = item as? Data,
+       let url = URL(dataRepresentation: data, relativeTo: nil) {
+        return url
+    }
+    if let url = item as? URL {
+        return url
+    }
+    if let string = item as? String {
+        if let url = URL(string: string), url.scheme != nil {
+            return url
+        }
+        return URL(fileURLWithPath: string)
+    }
+    return nil
 }
 
 struct AdditionalCursorsHeader: View {
@@ -265,6 +315,8 @@ struct CursorRoleRow: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     private var statusSymbolName: String {
@@ -309,6 +361,8 @@ struct SupplementalCursorRoleRow: View {
             }
             Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     private var statusSymbolName: String {
@@ -384,12 +438,6 @@ struct CursorRoleDetailView: View {
                             Text(assignment.sourceURL?.path ?? Localized.string("app.automaticallyMatchedInsideSelectedFolder"))
                                 .foregroundStyle(.secondary)
                                 .textSelection(.enabled)
-                        }
-                        if assignment.usesArrowFallback {
-                            DetailItem(title: Localized.string("app.status")) {
-                                Text(Localized.string("app.automaticMatchFailedArrowFallbackShort"))
-                                    .foregroundStyle(.orange)
-                            }
                         }
                     }
                     .padding(.horizontal, LayoutMetrics.cardHorizontalPadding)

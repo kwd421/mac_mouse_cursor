@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 struct CursorFrame {
     let image: NSImage
@@ -281,14 +282,22 @@ final class CursorController: ObservableObject {
     private var supplementalOverrideURLs: [SupplementalCursorRole: URL] = [:]
     private var currentTheme = CursorTheme(animations: [:], supplementalAnimations: [:])
     private var statusState: StatusState = .startingUp
+    private var securityScopedURLs: [URL: URL] = [:]
 
     init() {
         exportAuthorName = UserDefaults.standard.string(forKey: DefaultsKey.exportAuthorName) ?? ""
         exportSizeMultiplier = 1.0
     }
 
+    deinit {
+        for url in securityScopedURLs.values {
+            url.stopAccessingSecurityScopedResource()
+        }
+    }
+
     func start() {
         clearLegacyDefaults()
+        exportSizeMultiplier = 1.0
         assignments = unresolvedAssignments()
         selectedFolderURL = nil
         selectedFolderIsValid = false
@@ -318,14 +327,45 @@ final class CursorController: ObservableObject {
     func setThemeFolder(_ url: URL) {
         let normalizedNewURL = url.standardizedFileURL
         let previousURL = selectedFolderURL?.standardizedFileURL
+        retainSecurityScopedAccess(to: url)
         selectedFolderURL = url
         if previousURL != normalizedNewURL, !overrideURLs.isEmpty {
+            releaseSecurityScopedAccess(for: Array(overrideURLs.values))
             overrideURLs.removeAll()
         }
         if previousURL != normalizedNewURL, !supplementalOverrideURLs.isEmpty {
+            releaseSecurityScopedAccess(for: Array(supplementalOverrideURLs.values))
             supplementalOverrideURLs.removeAll()
         }
         reload()
+    }
+
+    @discardableResult
+    func handleDroppedItem(at url: URL, selection: SidebarCursorItem?) -> Bool {
+        if isDirectory(at: url) {
+            setThemeFolder(url)
+            return true
+        }
+
+        let ext = url.pathExtension.lowercased()
+        guard ext == "ani" || ext == "cur" else {
+            setStatus(.supportedFiles)
+            presentError(Localized.string("status.supportedFiles"))
+            return false
+        }
+
+        guard let selection else {
+            presentError(Localized.string("alert.dropCursorSelectionRequired"))
+            return false
+        }
+
+        switch selection {
+        case .primary(let role):
+            applyOverride(at: url, for: role)
+        case .supplemental(let role):
+            applyOverride(at: url, for: role)
+        }
+        return true
     }
 
     func chooseOverride(for role: CursorRole) {
@@ -333,19 +373,12 @@ final class CursorController: ObservableObject {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = false
-        panel.allowedContentTypes = [.data]
+        panel.allowedContentTypes = supportedCursorContentTypes
         panel.directoryURL = overrideURLs[role]?.deletingLastPathComponent() ?? selectedFolderURL
         panel.prompt = Localized.string("panel.chooseCursor")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        let ext = url.pathExtension.lowercased()
-        guard ext == "ani" || ext == "cur" else {
-            setStatus(.supportedFiles)
-            presentError(Localized.string("status.supportedFiles"))
-            return
-        }
-        overrideURLs[role] = url
-        reload()
+        applyOverride(at: url, for: role)
     }
 
     func chooseOverride(for role: SupplementalCursorRole) {
@@ -353,24 +386,12 @@ final class CursorController: ObservableObject {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = false
-        panel.allowedContentTypes = [.data]
+        panel.allowedContentTypes = supportedCursorContentTypes
         panel.directoryURL = supplementalOverrideURLs[role]?.deletingLastPathComponent() ?? selectedFolderURL
         panel.prompt = Localized.string("panel.chooseCursor")
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        let ext = url.pathExtension.lowercased()
-        guard ext == "ani" || ext == "cur" else {
-            setStatus(.supportedFiles)
-            presentError(Localized.string("status.supportedFiles"))
-            return
-        }
-        if let inheritedURL = effectiveSupplementalInheritedSourceURL(for: role),
-           inheritedURL.standardizedFileURL == url.standardizedFileURL {
-            supplementalOverrideURLs.removeValue(forKey: role)
-        } else {
-            supplementalOverrideURLs[role] = url
-        }
-        reload()
+        applyOverride(at: url, for: role)
     }
 
     func exportMousecapeCape(authorName: String) {
@@ -430,9 +451,12 @@ final class CursorController: ObservableObject {
                 fallbackRoles: resolution.fallbackRoles
             )
             resolvedRoleCount = assignments.filter(\.isResolved).count
-            selectedFolderIsValid = true
-            let folderName = selectedFolderURL?.lastPathComponent ?? ""
-            setStatus(.loaded(folderName: folderName, resolvedRoleCount: resolvedRoleCount, totalRoleCount: CursorRole.allCases.count))
+            selectedFolderIsValid = selectedFolderURL != nil
+            if let folderURL = selectedFolderURL {
+                setStatus(.loaded(folderName: folderURL.lastPathComponent, resolvedRoleCount: resolvedRoleCount, totalRoleCount: CursorRole.allCases.count))
+            } else {
+                setStatus(.chooseCursorFolder)
+            }
         } catch {
             currentTheme = CursorTheme(animations: [:], supplementalAnimations: [:])
             assignments = unresolvedAssignments()
@@ -470,15 +494,19 @@ final class CursorController: ObservableObject {
     }
 
     private func loadTheme() throws -> (theme: CursorTheme, filesByRole: [CursorRole: URL], fallbackRoles: Set<CursorRole>) {
-        guard let baseDirectory = selectedFolderURL else {
-            throw CursorError.missingTheme(Localized.string("error.noThemeFolderSelected"))
-        }
-
         var animations: [CursorRole: CursorAnimation] = [:]
         var supplementalAnimations: [SupplementalCursorRole: CursorAnimation] = [:]
         var parsedAnimationsByURL: [URL: CursorAnimation] = [:]
-        let resolvedTheme = try themeResolver.resolveTheme(in: baseDirectory)
-        var resolvedFiles = resolvedTheme.filesByRole
+        var resolvedFiles: [CursorRole: URL] = [:]
+        var fallbackRoles = Set<CursorRole>()
+
+        if let baseDirectory = selectedFolderURL {
+            let resolvedTheme = try themeResolver.resolveTheme(in: baseDirectory)
+            resolvedFiles = resolvedTheme.filesByRole
+            fallbackRoles = resolvedTheme.fallbackRoles
+        } else if overrideURLs.isEmpty && supplementalOverrideURLs.isEmpty {
+            throw CursorError.missingTheme(Localized.string("error.noThemeFolderSelected"))
+        }
 
         func parsedAnimation(for url: URL) throws -> CursorAnimation {
             let normalizedURL = url.standardizedFileURL
@@ -486,7 +514,7 @@ final class CursorController: ObservableObject {
                 return cached
             }
             let parsed = try autoreleasepool {
-                try parser.parseCursorFile(at: normalizedURL)
+                try parser.parseCursorFile(at: url)
             }
             parsedAnimationsByURL[normalizedURL] = parsed
             return parsed
@@ -508,6 +536,7 @@ final class CursorController: ObservableObject {
                     if let inheritedURL = effectiveSupplementalInheritedSourceURL(for: role, resolvedFiles: resolvedFiles),
                        inheritedURL.standardizedFileURL == override.standardizedFileURL,
                        let baseAnimation = animations[role.mappedPrimaryRole] {
+                        releaseSecurityScopedAccess(for: [override])
                         supplementalOverrideURLs.removeValue(forKey: role)
                         supplementalAnimations[role] = baseAnimation
                     } else {
@@ -515,6 +544,7 @@ final class CursorController: ObservableObject {
                     }
                     continue
                 } else {
+                    releaseSecurityScopedAccess(for: [override])
                     supplementalOverrideURLs.removeValue(forKey: role)
                 }
             }
@@ -523,11 +553,15 @@ final class CursorController: ObservableObject {
             }
         }
 
-        guard animations[.arrow] != nil else {
+        if let baseDirectory = selectedFolderURL, animations[.arrow] == nil {
             throw CursorError.missingTheme(baseDirectory.path)
         }
 
-        return (CursorTheme(animations: animations, supplementalAnimations: supplementalAnimations), resolvedFiles, resolvedTheme.fallbackRoles)
+        guard !animations.isEmpty || !supplementalAnimations.isEmpty else {
+            throw CursorError.missingTheme(Localized.string("error.noThemeFolderSelected"))
+        }
+
+        return (CursorTheme(animations: animations, supplementalAnimations: supplementalAnimations), resolvedFiles, fallbackRoles)
     }
 
     var exportSizePercentageText: String {
@@ -590,6 +624,68 @@ final class CursorController: ObservableObject {
             return primaryOverride
         }
         return resolvedFiles?[mappedRole]
+    }
+
+    private func applyOverride(at url: URL, for role: CursorRole) {
+        let ext = url.pathExtension.lowercased()
+        guard ext == "ani" || ext == "cur" else {
+            setStatus(.supportedFiles)
+            presentError(Localized.string("status.supportedFiles"))
+            return
+        }
+        if let previousURL = overrideURLs[role] {
+            releaseSecurityScopedAccess(for: [previousURL])
+        }
+        retainSecurityScopedAccess(to: url)
+        overrideURLs[role] = url
+        reload()
+    }
+
+    private func applyOverride(at url: URL, for role: SupplementalCursorRole) {
+        let standardizedURL = url.standardizedFileURL
+        let ext = url.pathExtension.lowercased()
+        guard ext == "ani" || ext == "cur" else {
+            setStatus(.supportedFiles)
+            presentError(Localized.string("status.supportedFiles"))
+            return
+        }
+        if let previousURL = supplementalOverrideURLs[role] {
+            releaseSecurityScopedAccess(for: [previousURL])
+        }
+        retainSecurityScopedAccess(to: url)
+        if let inheritedURL = effectiveSupplementalInheritedSourceURL(for: role),
+           inheritedURL.standardizedFileURL == standardizedURL {
+            releaseSecurityScopedAccess(for: [url])
+            supplementalOverrideURLs.removeValue(forKey: role)
+        } else {
+            supplementalOverrideURLs[role] = url
+        }
+        reload()
+    }
+
+    private func isDirectory(at url: URL) -> Bool {
+        (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+    }
+
+    private func retainSecurityScopedAccess(to url: URL) {
+        let standardizedURL = url.standardizedFileURL
+        guard securityScopedURLs[standardizedURL] == nil else { return }
+        if url.startAccessingSecurityScopedResource() {
+            securityScopedURLs[standardizedURL] = url
+        }
+    }
+
+    private func releaseSecurityScopedAccess(for urls: [URL]) {
+        for url in urls {
+            let standardizedURL = url.standardizedFileURL
+            if let scopedURL = securityScopedURLs.removeValue(forKey: standardizedURL) {
+                scopedURL.stopAccessingSecurityScopedResource()
+            }
+        }
+    }
+
+    private var supportedCursorContentTypes: [UTType] {
+        [UTType(filenameExtension: "ani"), UTType(filenameExtension: "cur")].compactMap { $0 }
     }
 
     private func capeDisplayName() -> String {

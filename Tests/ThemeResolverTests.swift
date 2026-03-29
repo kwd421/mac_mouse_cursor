@@ -4,6 +4,88 @@ import Testing
 @testable import CapeForge
 
 struct ThemeResolverTests {
+    @MainActor
+    @Test
+    func droppedCursorFileWithoutSelectionShowsAlert() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let fileURL = tempDirectory.appendingPathComponent("Text.ani")
+        FileManager.default.createFile(atPath: fileURL.path, contents: Data("x".utf8))
+
+        let controller = CursorController()
+        controller.start()
+
+        let handled = controller.handleDroppedItem(at: fileURL, selection: nil)
+
+        #expect(!handled)
+        #expect(controller.activeAlert?.message == Localized.string("alert.dropCursorSelectionRequired"))
+    }
+
+    @MainActor
+    @Test
+    func droppedFolderSelectsThemeFolder() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let controller = CursorController()
+        controller.start()
+
+        let handled = controller.handleDroppedItem(at: tempDirectory, selection: nil)
+
+        #expect(handled)
+        #expect(controller.selectedFolderURL?.standardizedFileURL == tempDirectory.standardizedFileURL)
+    }
+
+    @MainActor
+    @Test
+    func droppedCursorFileImmediatelyUpdatesPreviewForSelectedRole() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let folder = tempDirectory.appendingPathComponent("Theme", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+
+        let arrowURL = folder.appendingPathComponent("Normal.cur")
+        let textURL = tempDirectory.appendingPathComponent("Text.cur")
+
+        try makeCursorFile(color: .white, size: 16, at: arrowURL)
+        try makeCursorFile(color: .red, size: 24, at: textURL)
+
+        let controller = CursorController()
+        controller.start()
+        controller.setThemeFolder(folder)
+
+        #expect(controller.assignment(for: .arrow)?.appliedPreview != nil)
+        #expect(controller.assignment(for: .text)?.appliedPreview != nil)
+
+        let handled = controller.handleDroppedItem(at: textURL, selection: .primary(.text))
+
+        #expect(handled)
+        #expect(controller.assignment(for: .text)?.sourceURL?.standardizedFileURL == textURL.standardizedFileURL)
+        #expect(controller.assignment(for: .text)?.appliedPreview != nil)
+    }
+
+    @MainActor
+    @Test
+    func droppedCursorFileUpdatesPreviewWithoutSelectedFolder() throws {
+        let tempDirectory = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let textURL = tempDirectory.appendingPathComponent("Text.cur")
+        try makeCursorFile(color: .red, size: 24, at: textURL)
+
+        let controller = CursorController()
+        controller.start()
+
+        let handled = controller.handleDroppedItem(at: textURL, selection: .primary(.text))
+
+        #expect(handled)
+        #expect(controller.selectedFolderURL == nil)
+        #expect(controller.assignment(for: .text)?.sourceURL?.standardizedFileURL == textURL.standardizedFileURL)
+        #expect(controller.assignment(for: .text)?.appliedPreview != nil)
+    }
+
     @Test
     func resolvesDecomposedHangulFileNames() throws {
         let tempDirectory = try makeTemporaryDirectory()
@@ -314,6 +396,41 @@ struct ThemeResolverTests {
         let directory = base.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory
+    }
+
+    private func makeCursorFile(color: NSColor, size: Int, at url: URL) throws {
+        let image = NSImage(size: NSSize(width: size, height: size))
+        image.lockFocus()
+        color.setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: size, height: size)).fill()
+        image.unlockFocus()
+
+        guard
+            let tiff = image.tiffRepresentation,
+            let rep = NSBitmapImageRep(data: tiff),
+            let pngData = rep.representation(using: .png, properties: [:])
+        else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+
+        var data = Data()
+        data.append(contentsOf: [0x00, 0x00]) // reserved
+        data.append(contentsOf: [0x02, 0x00]) // type CUR
+        data.append(contentsOf: [0x01, 0x00]) // count
+        data.append(UInt8(size == 256 ? 0 : size))
+        data.append(UInt8(size == 256 ? 0 : size))
+        data.append(0x00) // color count
+        data.append(0x00) // reserved
+        data.append(contentsOf: [0x00, 0x00]) // hotspot x
+        data.append(contentsOf: [0x00, 0x00]) // hotspot y
+
+        let bytesInRes = UInt32(pngData.count)
+        let imageOffset = UInt32(22)
+        data.append(contentsOf: withUnsafeBytes(of: bytesInRes.littleEndian, Array.init))
+        data.append(contentsOf: withUnsafeBytes(of: imageOffset.littleEndian, Array.init))
+        data.append(pngData)
+
+        try data.write(to: url)
     }
 }
 
